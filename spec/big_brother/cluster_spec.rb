@@ -9,4 +9,14 @@ describe BigBrother::Cluster do
       cluster.should be_monitored
     end
   end
+
+  describe "unmonitor!" do
+    it "marks the cluster as unmonitored" do
+      cluster = BigBrother::Cluster.new('test')
+      cluster.monitor!
+      cluster.should be_monitored
+      cluster.unmonitor!
+      cluster.should_not be_monitored
+    end
+  end
 end

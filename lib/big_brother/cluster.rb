@@ -13,5 +13,9 @@ module BigBrother
     def monitor!
       @monitored = true
     end
+
+    def unmonitor!
+      @monitored = false
+    end
   end
 end
