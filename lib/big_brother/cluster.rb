@@ -5,6 +5,7 @@ module BigBrother
       @name = name
       @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
+      @nodes = attributes.fetch(:nodes, [])
       @last_check = Time.new(0)
     end
 
@@ -25,6 +26,7 @@ module BigBrother
     end
 
     def monitor_nodes
+      @nodes.each(&:current_health)
       @last_check = Time.now
     end
   end

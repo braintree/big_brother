@@ -16,3 +16,12 @@ RSpec.configure do |config|
     BigBrother.clusters.replace({})
   end
 end
+
+def run_in_reactor
+  around(:each) do |spec|
+    EM.synchrony do
+      spec.run
+      EM.stop
+    end
+  end
+end
