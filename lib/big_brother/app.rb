@@ -6,7 +6,7 @@ module BigBrother
       "HELLO"
     end
 
-    post "/cluster/:name" do |name|
+    put "/cluster/:name" do |name|
       if BigBrother.clusters.has_key?(name)
         BigBrother.clusters[name].start_monitoring!
       else

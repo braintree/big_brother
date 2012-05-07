@@ -14,11 +14,11 @@ module BigBrother
       end
     end
 
-    describe "POST /cluster/:name" do
+    describe "PUT /cluster/:name" do
       it "marks the cluster as monitored" do
         BigBrother.clusters['test'] = Cluster.new('test')
 
-        post "/cluster/test"
+        put "/cluster/test"
 
         last_response.status.should == 200
         last_response.body.should == ""
@@ -26,7 +26,7 @@ module BigBrother
       end
 
       it "returns 'not found' if the cluster does not exist" do
-        post "/cluster/test"
+        put "/cluster/test"
 
         last_response.status.should == 404
         last_response.body.should == "Cluster test not found"
