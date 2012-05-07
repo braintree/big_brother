@@ -8,7 +8,7 @@ module BigBrother
 
     post "/cluster/:name" do |name|
       if BigBrother.clusters.has_key?(name)
-        BigBrother.clusters[name].monitor!
+        BigBrother.clusters[name].start_monitoring!
       else
         [404, "Cluster #{name} not found"]
       end
@@ -16,7 +16,7 @@ module BigBrother
 
     delete "/cluster/:name" do |name|
       if BigBrother.clusters.has_key?(name)
-        BigBrother.clusters[name].unmonitor!
+        BigBrother.clusters[name].stop_monitoring!
       else
         [404, "Cluster #{name} not found"]
       end

@@ -12,11 +12,11 @@ module BigBrother
       @monitored
     end
 
-    def monitor!
+    def start_monitoring!
       @monitored = true
     end
 
-    def unmonitor!
+    def stop_monitoring!
       @monitored = false
     end
 

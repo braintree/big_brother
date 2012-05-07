@@ -1,21 +1,21 @@
 require 'spec_helper'
 
 describe BigBrother::Cluster do
-  describe "monitor!" do
+  describe "start_monitoring!" do
     it "marks the cluster as monitored" do
       cluster = BigBrother::Cluster.new('test')
       cluster.should_not be_monitored
-      cluster.monitor!
+      cluster.start_monitoring!
       cluster.should be_monitored
     end
   end
 
-  describe "unmonitor!" do
+  describe "stop_monitoring!" do
     it "marks the cluster as unmonitored" do
       cluster = BigBrother::Cluster.new('test')
-      cluster.monitor!
+      cluster.start_monitoring!
       cluster.should be_monitored
-      cluster.unmonitor!
+      cluster.stop_monitoring!
       cluster.should_not be_monitored
     end
   end

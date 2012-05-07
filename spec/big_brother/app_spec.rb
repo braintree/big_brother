@@ -36,7 +36,7 @@ module BigBrother
     describe "DELETE /cluster/:name" do
       it "marks the cluster as no longer monitored" do
         BigBrother.clusters['test'] = Cluster.new('test')
-        BigBrother.clusters['test'].monitor!
+        BigBrother.clusters['test'].start_monitoring!
 
         delete "/cluster/test"
 

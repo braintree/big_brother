@@ -13,7 +13,7 @@ describe BigBrother::Ticker do
     it "monitors clusters requiring monitoring" do
       BigBrother.clusters['one'] = BigBrother::Cluster.new('one')
       BigBrother.clusters['two'] = BigBrother::Cluster.new('two')
-      BigBrother.clusters['two'].monitor!
+      BigBrother.clusters['two'].start_monitoring!
 
       BigBrother.clusters['two'].should_receive(:monitor_nodes)
 
