@@ -1,0 +1,34 @@
+---
+test1:
+  checkInterval: 1
+  scheduler: wrr
+  fwmark: 1
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/valid
+  - address: 127.0.0.1
+    port: 9002
+    path: /test/valid
+test2:
+  checkInterval: 1
+  scheduler: wrr
+  fwmark: 2
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/invalid
+  - address: 127.0.0.1
+    port: 9002
+    path: /test/invalid
+test3:
+  checkInterval: 1
+  scheduler: wrr
+  fwmark: 3
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/valid
+  - address: 127.0.0.1
+    port: 9002
+    path: /test/invalid

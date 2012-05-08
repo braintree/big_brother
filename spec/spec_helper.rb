@@ -51,3 +51,5 @@ end
 def public_ip_address
   local_ip = UDPSocket.open {|s| s.connect("64.233.187.99", 1); s.addr.last}
 end
+
+TEST_CONFIG = File.expand_path('support/example_config.yml', File.dirname(__FILE__))
