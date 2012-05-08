@@ -10,8 +10,7 @@ describe BigBrother::Cluster do
     end
 
     it "starts the service in IPVS" do
-      node = BigBrother::Node.new('localhost', 8081, '/status')
-      cluster = Factory.cluster(:fwmark => 100, :scheduler => 'wrr', :nodes => [node])
+      cluster = Factory.cluster(:fwmark => 100, :scheduler => 'wrr')
 
       cluster.start_monitoring!
       @recording_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
@@ -37,7 +36,7 @@ describe BigBrother::Cluster do
     end
 
     it "checks each node" do
-      node = BigBrother::Node.new('localhost', 8081, '/status')
+      node = Factory.node
       node.should_receive(:current_health)
       cluster = Factory.cluster(:nodes => [node])
 
