@@ -25,6 +25,7 @@ module BigBrother
     end
 
     def stop_monitoring!
+      BigBrother.ipvs.stop_cluster(@fwmark)
       @monitored = false
     end
 

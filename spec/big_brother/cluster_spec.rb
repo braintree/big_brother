@@ -19,11 +19,14 @@ describe BigBrother::Cluster do
 
   describe "#stop_monitoring!" do
     it "marks the cluster as unmonitored" do
-      cluster = Factory.cluster
+      cluster = Factory.cluster(:fwmark => 100)
+
       cluster.start_monitoring!
       cluster.should be_monitored
+
       cluster.stop_monitoring!
       cluster.should_not be_monitored
+      @recording_executor.commands.should include("ipvsadm --delete-service --fwmark-service 100")
     end
   end
 
