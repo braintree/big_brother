@@ -11,8 +11,8 @@ describe BigBrother::Ticker do
 
   describe ".tick" do
     it "monitors clusters requiring monitoring" do
-      BigBrother.clusters['one'] = BigBrother::Cluster.new('one')
-      BigBrother.clusters['two'] = BigBrother::Cluster.new('two')
+      BigBrother.clusters['one'] = Factory.cluster
+      BigBrother.clusters['two'] = Factory.cluster
       BigBrother.clusters['two'].start_monitoring!
 
       BigBrother.clusters['two'].should_receive(:monitor_nodes)

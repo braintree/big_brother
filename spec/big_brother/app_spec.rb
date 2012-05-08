@@ -16,7 +16,7 @@ module BigBrother
 
     describe "PUT /cluster/:name" do
       it "marks the cluster as monitored" do
-        BigBrother.clusters['test'] = Cluster.new('test')
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
 
         put "/cluster/test"
 
@@ -33,8 +33,7 @@ module BigBrother
       end
 
       it "populates IPVS" do
-        node = Node.new('localhost', 8081, '/status')
-        BigBrother.clusters['test'] = Cluster.new('test', :fwmark => 100, :scheduler => 'wrr', :nodes => [node])
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 100, :scheduler => 'wrr')
 
         put "/cluster/test"
 
@@ -47,7 +46,7 @@ module BigBrother
 
     describe "DELETE /cluster/:name" do
       it "marks the cluster as no longer monitored" do
-        BigBrother.clusters['test'] = Cluster.new('test')
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
         BigBrother.clusters['test'].start_monitoring!
 
         delete "/cluster/test"

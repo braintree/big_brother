@@ -3,7 +3,7 @@ require 'spec_helper'
 describe BigBrother::Cluster do
   describe "#start_monitoring!" do
     it "marks the cluster as monitored" do
-      cluster = BigBrother::Cluster.new('test')
+      cluster = Factory.cluster
       cluster.should_not be_monitored
       cluster.start_monitoring!
       cluster.should be_monitored
@@ -11,7 +11,7 @@ describe BigBrother::Cluster do
 
     it "starts the service in IPVS" do
       node = BigBrother::Node.new('localhost', 8081, '/status')
-      cluster = BigBrother::Cluster.new('test', :fwmark => 100, :scheduler => 'wrr', :nodes => [node])
+      cluster = Factory.cluster(:fwmark => 100, :scheduler => 'wrr', :nodes => [node])
 
       cluster.start_monitoring!
       @recording_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
@@ -20,7 +20,7 @@ describe BigBrother::Cluster do
 
   describe "#stop_monitoring!" do
     it "marks the cluster as unmonitored" do
-      cluster = BigBrother::Cluster.new('test')
+      cluster = Factory.cluster
       cluster.start_monitoring!
       cluster.should be_monitored
       cluster.stop_monitoring!
@@ -30,7 +30,7 @@ describe BigBrother::Cluster do
 
   describe "#monitor_nodes" do
     it "marks the cluster as no longer requiring monitoring" do
-      cluster = BigBrother::Cluster.new('test')
+      cluster = Factory.cluster
       cluster.needs_check?.should be_true
       cluster.monitor_nodes
       cluster.needs_check?.should be_false
@@ -39,7 +39,7 @@ describe BigBrother::Cluster do
     it "checks each node" do
       node = BigBrother::Node.new('localhost', 8081, '/status')
       node.should_receive(:current_health)
-      cluster = BigBrother::Cluster.new('test', :nodes => [node])
+      cluster = Factory.cluster(:nodes => [node])
 
       cluster.monitor_nodes
     end
