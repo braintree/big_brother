@@ -33,7 +33,10 @@ module BigBrother
     end
 
     def monitor_nodes
-      @nodes.each(&:current_health)
+      @nodes.each do |node|
+        BigBrother.ipvs.edit_node(@fwmark, node.address, node.current_health)
+      end
+
       @last_check = Time.now
     end
   end

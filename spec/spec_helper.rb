@@ -3,6 +3,7 @@ ENV['RACK_ENV'] = 'test'
 require 'rspec'
 require 'rack/test'
 require 'big_brother'
+require "socket"
 
 Sinatra::Synchrony.patch_tests!
 
@@ -32,4 +33,21 @@ def run_in_reactor
       EM.stop
     end
   end
+end
+
+def with_litmus_server(ip, port, health)
+  around(:each) do |spec|
+    server = StubServer.new(<<-HTTP, 0.25, port, ip)
+HTTP/1.0 200 OK
+Connection: close
+
+Health: #{health}
+HTTP
+    spec.run
+    server.stop
+  end
+end
+
+def public_ip_address
+  local_ip = UDPSocket.open {|s| s.connect("64.233.187.99", 1); s.addr.last}
 end

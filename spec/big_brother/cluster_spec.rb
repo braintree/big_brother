@@ -35,12 +35,14 @@ describe BigBrother::Cluster do
       cluster.needs_check?.should be_false
     end
 
-    it "checks each node" do
-      node = Factory.node
-      node.should_receive(:current_health)
-      cluster = Factory.cluster(:nodes => [node])
+    it "updates the weight for each node" do
+      node = Factory.node(:address => '127.0.0.1')
+      node.should_receive(:current_health).and_return(56)
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
 
       cluster.monitor_nodes
+
+      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
     end
   end
 end
