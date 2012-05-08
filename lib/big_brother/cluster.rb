@@ -17,6 +17,10 @@ module BigBrother
 
     def start_monitoring!
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
+      @nodes.each do |node|
+        BigBrother.ipvs.start_node(@fwmark, node.address, 100)
+      end
+
       @monitored = true
     end
 

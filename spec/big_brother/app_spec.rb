@@ -33,14 +33,18 @@ module BigBrother
       end
 
       it "populates IPVS" do
-        BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 100, :scheduler => 'wrr')
+        first = Factory.node(:address => '127.0.0.1')
+        second = Factory.node(:address => '127.0.0.2')
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 100, :scheduler => 'wrr', :nodes => [first, second])
 
         put "/cluster/test"
 
         last_response.status.should == 200
         last_response.body.should == ""
         BigBrother.clusters['test'].should be_monitored
-        @recording_executor.commands.last.should == "ipvsadm --add-service --fwmark-service 100 --scheduler wrr"
+        @recording_executor.commands.first.should == "ipvsadm --add-service --fwmark-service 100 --scheduler wrr"
+        @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
+        @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100")
       end
     end
 
