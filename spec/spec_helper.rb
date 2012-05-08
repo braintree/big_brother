@@ -12,6 +12,14 @@ RSpec.configure do |config|
   config.expect_with :rspec
   config.include Rack::Test::Methods
 
+  config.around(:each) do |spec|
+    ipvs = BigBrother.ipvs
+    @recording_executor = RecordingExecutor.new
+    BigBrother.ipvs = BigBrother::IPVS.new(@recording_executor)
+    spec.run
+    BigBrother.ipvs = ipvs
+  end
+
   config.before(:each) do
     BigBrother.clusters.replace({})
   end

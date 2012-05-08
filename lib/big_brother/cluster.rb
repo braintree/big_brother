@@ -3,6 +3,8 @@ module BigBrother
 
     def initialize(name, attributes = {})
       @name = name
+      @fwmark = attributes[:fwmark]
+      @scheduler = attributes[:scheduler]
       @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
       @nodes = attributes.fetch(:nodes, [])
@@ -14,6 +16,7 @@ module BigBrother
     end
 
     def start_monitoring!
+      BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       @monitored = true
     end
 

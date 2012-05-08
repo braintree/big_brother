@@ -8,6 +8,14 @@ describe BigBrother::Cluster do
       cluster.start_monitoring!
       cluster.should be_monitored
     end
+
+    it "starts the service in IPVS" do
+      node = BigBrother::Node.new('localhost', 8081, '/status')
+      cluster = BigBrother::Cluster.new('test', :fwmark => 100, :scheduler => 'wrr', :nodes => [node])
+
+      cluster.start_monitoring!
+      @recording_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
+    end
   end
 
   describe "#stop_monitoring!" do

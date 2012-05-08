@@ -31,6 +31,18 @@ module BigBrother
         last_response.status.should == 404
         last_response.body.should == "Cluster test not found"
       end
+
+      it "populates IPVS" do
+        node = Node.new('localhost', 8081, '/status')
+        BigBrother.clusters['test'] = Cluster.new('test', :fwmark => 100, :scheduler => 'wrr', :nodes => [node])
+
+        put "/cluster/test"
+
+        last_response.status.should == 200
+        last_response.body.should == ""
+        BigBrother.clusters['test'].should be_monitored
+        @recording_executor.commands.last.should == "ipvsadm --add-service --fwmark-service 100 --scheduler wrr"
+      end
     end
 
     describe "DELETE /cluster/:name" do
