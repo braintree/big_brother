@@ -10,6 +10,8 @@ module BigBrother
       @monitored = false
       @nodes = attributes.fetch('nodes', [])
       @last_check = Time.new(0)
+      @up_file = BigBrother::StatusFile.new('up', @name)
+      @down_file = BigBrother::StatusFile.new('down', @name)
     end
 
     def monitored?
@@ -36,10 +38,20 @@ module BigBrother
 
     def monitor_nodes
       @nodes.each do |node|
-        BigBrother.ipvs.edit_node(@fwmark, node.address, node.current_health)
+        BigBrother.ipvs.edit_node(@fwmark, node.address, _determine_weight(node))
       end
 
       @last_check = Time.now
+    end
+
+    def _determine_weight(node)
+      if @up_file.exists?
+        100
+      elsif @down_file.exists?
+        0
+      else
+        node.current_health
+      end
     end
   end
 end

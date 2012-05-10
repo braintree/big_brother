@@ -47,5 +47,29 @@ describe BigBrother::Cluster do
 
       @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
     end
+
+    it "sets the weight to 100 for each node if an upfile exists" do
+      node = Factory.node(:address => '127.0.0.1')
+      node.stub(:current_health).and_return(56)
+      cluster = Factory.cluster(:name => 'test', :fwmark => 100, :nodes => [node])
+
+      BigBrother::StatusFile.new('up', 'test').create('Up for testing')
+
+      cluster.monitor_nodes
+
+      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
+    end
+
+    it "sets the weight to 0 for each node if a downfile exists" do
+      node = Factory.node(:address => '127.0.0.1')
+      node.stub(:current_health).and_return(56)
+      cluster = Factory.cluster(:name => 'test', :fwmark => 100, :nodes => [node])
+
+      BigBrother::StatusFile.new('down', 'test').create('Down for testing')
+
+      cluster.monitor_nodes
+
+      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
+    end
   end
 end

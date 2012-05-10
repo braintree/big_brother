@@ -23,6 +23,7 @@ RSpec.configure do |config|
 
   config.before(:each) do
     BigBrother.clusters.replace({})
+    FileUtils.rm_rf(BigBrother.config_dir)
   end
 end
 
@@ -51,5 +52,7 @@ end
 def public_ip_address
   local_ip = UDPSocket.open {|s| s.connect("64.233.187.99", 1); s.addr.last}
 end
+
+BigBrother.config_dir = "/tmp/big_brother"
 
 TEST_CONFIG = File.expand_path('support/example_config.yml', File.dirname(__FILE__))
