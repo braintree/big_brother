@@ -6,20 +6,21 @@ module BigBrother
       "HELLO"
     end
 
+    before "/cluster/:name" do |name|
+      @cluster = BigBrother.clusters[name]
+      halt 404, "Cluster #{name} not found" if @cluster.nil?
+    end
+
+    get "/cluster/:name" do |name|
+      [200, "Running: #{@cluster.monitored?}"]
+    end
+
     put "/cluster/:name" do |name|
-      if BigBrother.clusters.has_key?(name)
-        BigBrother.clusters[name].start_monitoring!
-      else
-        [404, "Cluster #{name} not found"]
-      end
+      @cluster.start_monitoring!
     end
 
     delete "/cluster/:name" do |name|
-      if BigBrother.clusters.has_key?(name)
-        BigBrother.clusters[name].stop_monitoring!
-      else
-        [404, "Cluster #{name} not found"]
-      end
+      @cluster.stop_monitoring!
     end
   end
 end

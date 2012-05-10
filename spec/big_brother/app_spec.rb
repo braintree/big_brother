@@ -14,6 +14,33 @@ module BigBrother
       end
     end
 
+    describe "GET /cluster/:name" do
+      it "returns 'Running: false' when the cluster isn't running" do
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
+
+        get "/cluster/test"
+
+        last_response.status.should == 200
+        last_response.body.should == "Running: false"
+      end
+
+      it "returns 'Running: true' when the cluster is running" do
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
+
+        put "/cluster/test"
+        get "/cluster/test"
+
+        last_response.status.should == 200
+        last_response.body.should == "Running: true"
+      end
+
+      it "returns a 404 http status when the cluster is not found" do
+        get "/cluster/not_found"
+
+        last_response.status.should == 404
+      end
+    end
+
     describe "PUT /cluster/:name" do
       it "marks the cluster as monitored" do
         BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
