@@ -32,6 +32,10 @@ module BigBrother
       @monitored = false
     end
 
+    def resume_monitoring!
+      @monitored = true
+    end
+
     def needs_check?
       @last_check + @check_interval < Time.now
     end

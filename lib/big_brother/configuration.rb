@@ -10,6 +10,28 @@ module BigBrother
       Hash[assoc_array]
     end
 
+    def self.synchronize_with_ipvs(clusters, ipvs_state)
+      clusters.values.each do |cluster|
+        if ipvs_state.has_key?(cluster.fwmark.to_s)
+          cluster.resume_monitoring!
+
+          running_nodes = ipvs_state[cluster.fwmark.to_s]
+          cluster_nodes = cluster.nodes.map(&:address)
+
+          _remove_nodes(cluster, running_nodes - cluster_nodes)
+          _add_nodes(cluster, cluster_nodes - running_nodes)
+        end
+      end
+    end
+
+    def self._add_nodes(cluster, addresses)
+      addresses.each { |address| BigBrother.ipvs.start_node(cluster.fwmark, address, 100) }
+    end
+
+    def self._remove_nodes(cluster, addresses)
+      addresses.each { |address| BigBrother.ipvs.stop_node(cluster.fwmark, address) }
+    end
+
     def self._parse_nodes(nodes)
       nodes.map do |values|
         Node.new(values['address'], values['port'], values['path'])

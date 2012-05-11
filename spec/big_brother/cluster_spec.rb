@@ -72,4 +72,14 @@ describe BigBrother::Cluster do
       @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
     end
   end
+
+  describe "#resume_monitoring!" do
+    it "marks the cluster as monitored" do
+      cluster = Factory.cluster
+
+      cluster.monitored?.should be_false
+      cluster.resume_monitoring!
+      cluster.monitored?.should be_true
+    end
+  end
 end
