@@ -19,4 +19,12 @@ module BigBrother
 
   self.ipvs = IPVS.new
   self.clusters = {}
+
+  def self.configure(filename)
+    @clusters = BigBrother::Configuration.evaluate(filename)
+  end
+
+  def self.start_ticker!
+    Ticker.schedule!
+  end
 end

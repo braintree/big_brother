@@ -16,6 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = BigBrother::VERSION
 
   gem.add_dependency "sinatra-synchrony", "~> 0.3.0"
+  gem.add_dependency "thin", "~> 1.3.1"
 
   gem.add_development_dependency "rspec", "2.9.0"
   gem.add_development_dependency "rack-test", "0.6.1"

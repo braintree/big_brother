@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'big_brother'
+require 'big_brother/cli'
+
+BigBrother::CLI.new.start
