@@ -52,6 +52,16 @@ module BigBrother
         BigBrother.clusters['test'].should be_monitored
       end
 
+      it "only starts monitoring the cluster once" do
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
+
+        put "/cluster/test"
+        last_response.status.should == 200
+
+        put "/cluster/test"
+        last_response.status.should == 304
+      end
+
       it "returns 'not found' if the cluster does not exist" do
         put "/cluster/test"
 
@@ -87,6 +97,15 @@ module BigBrother
         BigBrother.clusters['test'].should_not be_monitored
       end
 
+      it "only stops monitoring the cluster once" do
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
+
+        delete "/cluster/test"
+
+        last_response.status.should == 304
+        last_response.body.should == ""
+        BigBrother.clusters['test'].should_not be_monitored
+      end
       it "returns 'not found' if the cluster does not exist" do
         delete "/cluster/test"
 
