@@ -1,4 +1,3 @@
-require 'thin'
 module BigBrother
   class CLI < Rack::Server
     class Options
@@ -57,6 +56,12 @@ module BigBrother
         EM.synchrony do
           BigBrother.configure(options[:big_brother_config])
           BigBrother.start_ticker!
+        end
+
+        Signal.trap("HUP") do
+          EM.synchrony do
+            BigBrother.reconfigure
+          end
         end
       end
 

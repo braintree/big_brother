@@ -2,6 +2,7 @@ require 'sinatra/base'
 require 'sinatra/synchrony'
 require 'em-synchrony/em-http'
 require 'thin'
+require 'yaml'
 
 require 'big_brother/app'
 require 'big_brother/cluster'
