@@ -7,10 +7,19 @@ module BigBrother
     end
 
     describe "/" do
-      it "works" do
+      it "returns the list of configured clusters and their status" do
+        BigBrother.clusters['one'] = Factory.cluster(:name => 'one', :fwmark => 1)
+        BigBrother.clusters['two'] = Factory.cluster(:name => 'two', :fwmark => 2)
+        BigBrother.clusters['three'] = Factory.cluster(:name => 'three', :fwmark => 3)
+        BigBrother.clusters['three'].start_monitoring!
+        BigBrother.clusters['four'] = Factory.cluster(:name => 'four', :fwmark => 4)
+
         get "/"
         last_response.status.should == 200
-        last_response.body.should == "HELLO"
+        last_response.body.should include("one (1): not running")
+        last_response.body.should include("two (2): not running")
+        last_response.body.should include("three (3): running")
+        last_response.body.should include("four (4): not running")
       end
     end
 

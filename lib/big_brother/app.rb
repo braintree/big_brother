@@ -3,7 +3,9 @@ module BigBrother
     register Sinatra::Synchrony
 
     get "/" do
-      "HELLO"
+      BigBrother.clusters.map do |name, cluster|
+        "#{name} (#{cluster.fwmark}): #{cluster.monitored? ? "running" : "not running"}"
+      end.join("\n") + "\n"
     end
 
     before "/cluster/:name" do |name|
