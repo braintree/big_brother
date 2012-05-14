@@ -27,6 +27,7 @@ module BigBrother
 
   def self.configure(filename)
     @clusters = BigBrother::Configuration.evaluate(filename)
+    BigBrother::Configuration.synchronize_with_ipvs(@clusters, BigBrother.ipvs.running_configuration)
   end
 
   def self.start_ticker!

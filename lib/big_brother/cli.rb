@@ -52,9 +52,13 @@ module BigBrother
       end
 
       BigBrother.config_dir = options[:config_dir]
-      BigBrother.configure(options[:big_brother_config])
 
-      Thin::Callbacks.after_connect { BigBrother.start_ticker! }
+      Thin::Callbacks.after_connect do
+        EM.synchrony do
+          BigBrother.configure(options[:big_brother_config])
+          BigBrother.start_ticker!
+        end
+      end
 
       super
     end
