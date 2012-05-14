@@ -32,6 +32,19 @@ describe BigBrother::Ticker do
         @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server #{public_ip_address} --ipip --weight 76")
       end
 
+      it "only monitors a cluster once in the given interval" do
+        BigBrother.clusters['test'] = Factory.cluster(
+          :fwmark => 100,
+          :nodes => [Factory.node(:address  => '127.0.0.1', :port => 8081)]
+        )
+        BigBrother.clusters['test'].start_monitoring!
+        @recording_executor.commands.clear
+
+        BigBrother::Ticker.tick
+        BigBrother::Ticker.tick
+
+        @recording_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74"]
+      end
     end
 
     it "monitors clusters requiring monitoring" do

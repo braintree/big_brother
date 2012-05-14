@@ -5,7 +5,7 @@ module BigBrother
     end
 
     def self.tick
-      BigBrother.clusters.values.select(&:monitored?).each do |cluster|
+      BigBrother.clusters.values.select(&:needs_check?).each do |cluster|
         cluster.monitor_nodes
       end
     end

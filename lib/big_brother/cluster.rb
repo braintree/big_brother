@@ -37,6 +37,7 @@ module BigBrother
     end
 
     def needs_check?
+      return false unless monitored?
       @last_check + @check_interval < Time.now
     end
 

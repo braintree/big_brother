@@ -30,9 +30,19 @@ describe BigBrother::Cluster do
     end
   end
 
+  describe "#needs_check?" do
+    it "requires the cluster to be monitored" do
+      cluster = Factory.cluster
+      cluster.needs_check?.should be_false
+      cluster.start_monitoring!
+      cluster.needs_check?.should be_true
+    end
+  end
+
   describe "#monitor_nodes" do
     it "marks the cluster as no longer requiring monitoring" do
       cluster = Factory.cluster
+      cluster.start_monitoring!
       cluster.needs_check?.should be_true
       cluster.monitor_nodes
       cluster.needs_check?.should be_false
