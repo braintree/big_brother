@@ -26,11 +26,18 @@ module BigBrother
   self.clusters = {}
 
   def self.configure(filename)
+    @config_file = filename
     @clusters = BigBrother::Configuration.evaluate(filename)
     BigBrother::Configuration.synchronize_with_ipvs(@clusters, BigBrother.ipvs.running_configuration)
   end
 
   def self.start_ticker!
     Ticker.schedule!
+  end
+
+  def self.reconfigure
+    Ticker.pause do
+      configure(@config_file)
+    end
   end
 end
