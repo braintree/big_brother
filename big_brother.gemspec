@@ -2,11 +2,11 @@
 require File.expand_path('../lib/big_brother/version', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.authors       = ["TODO: Write your name"]
+  gem.authors       = ["Braintree"]
   gem.email         = ["code@getbraintree.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{IPVS backend supervisor}
+  gem.summary       = %q{Process to monitor and update weights for servers in an IPVS pool}
+  gem.homepage      = "https://github.com/braintree/big_brother"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
