@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'sinatra/synchrony'
 require 'em-synchrony/em-http'
+require 'thin'
 
 require 'big_brother/app'
 require 'big_brother/cluster'
@@ -11,6 +12,10 @@ require 'big_brother/shell_executor'
 require 'big_brother/status_file'
 require 'big_brother/ticker'
 require 'big_brother/version'
+
+require 'thin/callbacks'
+require 'thin/backends/tcp_server_with_callbacks'
+require 'thin/callback_rack_handler'
 
 module BigBrother
   class << self

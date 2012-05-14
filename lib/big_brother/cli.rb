@@ -1,3 +1,4 @@
+require 'thin'
 module BigBrother
   class CLI < Rack::Server
     class Options
@@ -30,9 +31,14 @@ module BigBrother
         opt_parser.parse! args
 
         options[:config] = File.expand_path("../../config.ru", File.dirname(__FILE__))
-        options[:server] = 'thin'
+        options[:server] = 'thin-with-callbacks'
+        options[:backend] = Thin::Backends::TcpServerWithCallbacks
         options
       end
+    end
+
+    def initialize(options = nil)
+      super
     end
 
     def opt_parser
@@ -47,6 +53,9 @@ module BigBrother
 
       BigBrother.config_dir = options[:config_dir]
       BigBrother.configure(options[:big_brother_config])
+
+      Thin::Callbacks.after_connect { BigBrother.start_ticker! }
+
       super
     end
 
