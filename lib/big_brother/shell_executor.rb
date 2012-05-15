@@ -1,6 +1,7 @@
 module BigBrother
   class ShellExecutor
     def invoke(command)
+      BigBrother.logger.info("Running command: #{command.inspect}")
       _system(command)
     end
 

@@ -53,6 +53,9 @@ module BigBrother
       BigBrother.config_dir = options[:config_dir]
 
       Thin::Callbacks.after_connect do
+        EM.syslog_setup('0.0.0.0', 514)
+        BigBrother.logger.info "Starting big brother on port #{options[:Port]}"
+
         EM.synchrony do
           BigBrother.configure(options[:big_brother_config])
           BigBrother.start_ticker!
@@ -64,9 +67,6 @@ module BigBrother
             BigBrother.reconfigure
           end
         end
-
-        EM.syslog_setup('0.0.0.0', 514)
-        BigBrother.logger.info "Starting big brother on port #{options[:Port]}"
       end
 
       super
