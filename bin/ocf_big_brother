@@ -1,0 +1,174 @@
+#!/bin/bash
+#
+#  Michael Vallaly (Aug '11) Ver 1.0
+#
+#  IPVS Supervisor daemon OCF resource handler script
+#
+
+AWK_BIN="/usr/bin/awk"
+CURL_BIN="/usr/bin/curl"
+EGREP_BIN="/bin/egrep"
+
+CURL_TIMEOUT_SEC=5
+SUPERVISOR_URL="http://127.0.0.1:9292"
+
+#######################################################################
+
+# Pull in OCF functions
+. /usr/lib/ocf/resource.d/heartbeat/.ocf-shellfuncs
+
+#######################################################################
+
+meta_data() {
+	cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="Big Brother" version="0.9">
+<version>1.0</version>
+
+<longdesc lang="en">
+This is the Big Brother Resource Agent. It enables the management
+and monitoring of IPVS via the OCF resource API.
+</longdesc>
+<shortdesc lang="en">Big Brother resource agent</shortdesc>
+
+<parameters>
+  <parameter name="cluster" unique="1" required="1">
+    <longdesc lang="en">
+      Cluster Name as defined in the Big Brother Configuration
+    </longdesc>
+    <shortdesc lang="en">Cluster Name</shortdesc>
+    <content type="string" default="" />
+  </parameter>
+</parameters>
+
+<actions>
+<action name="start"        timeout="20" />
+<action name="stop"         timeout="40" />
+<action name="monitor"      timeout="20" interval="10" depth="0" start-delay="0" />
+<action name="reload"       timeout="60" />
+<action name="migrate_to"   timeout="100" />
+<action name="migrate_from" timeout="90" />
+<action name="meta-data"    timeout="5" />
+<action name="validate-all" timeout="30" />
+</actions>
+</resource-agent>
+END
+}
+
+#######################################################################
+
+# don't exit on TERM, to test that lrmd makes sure that we do exit
+trap sigterm_handler TERM
+sigterm_handler() {
+	ocf_log info "Attempted to use TERM to bring us down. No such luck."
+	return
+}
+
+ipvs_cluster_usage() {
+	cat <<END
+usage: $0 {start|stop|monitor|meta-data|validate-all}
+
+Expects to have a fully populated OCF RA-compliant environment set.
+END
+}
+
+ipvs_cluster_start() {
+
+  # Check if the protocol is already running
+  ipvs_cluster_monitor
+  if [ $? -eq ${OCF_SUCCESS} ]; then
+    return ${OCF_SUCCESS}
+  else
+    # Start the requested cluster
+    if [ `$CURL_BIN -m ${CURL_TIMEOUT_SEC} -X PUT -w "%{http_code}" -o /dev/null -s "${SUPERVISOR_URL}/cluster/${OCF_RESKEY_cluster}"` == 200 ]; then
+      return ${OCF_SUCCESS}
+    else
+      return ${OCF_ERR_GENERIC}
+    fi
+  fi
+
+}
+
+ipvs_cluster_stop() {
+
+  # Check if the protocol is already running
+  ipvs_cluster_monitor
+  if [ $? -eq ${OCF_SUCCESS} ]; then
+    # Stop the requested cluster
+    if [ `$CURL_BIN -m ${CURL_TIMEOUT_SEC} -X DELETE -w "%{http_code}" -o /dev/null -s "${SUPERVISOR_URL}/cluster/${OCF_RESKEY_cluster}"` == 200 ]; then
+      return ${OCF_SUCCESS}
+    else
+      return ${OCF_ERR_GENERIC}
+    fi
+  else
+    return ${OCF_SUCCESS}
+  fi
+
+}
+
+ipvs_cluster_monitor() {
+
+  local cluster_status
+  local http_status
+
+  # Check if the IPVS supervisor is running for the cluster
+  cluster_status=`$CURL_BIN -m ${CURL_TIMEOUT_SEC} -w '\nHTTP_Status: %{http_code}\n' -s "${SUPERVISOR_URL}/cluster/${OCF_RESKEY_cluster}"`
+  # If curl can't connect then we got bigger issues
+  if [ $? -ne 0 ]; then
+    return ${OCF_ERR_PERM};
+  fi
+
+  # Check for remote HTTP response code
+  http_status=`echo "${cluster_status}" |${EGREP_BIN} -e "^HTTP_Status: "|$AWK_BIN '{print $2}' |tr -d '[:alpha:][:punct:][:space:]' |head -1`
+
+  # We aren't running if we never get a status code back
+  if [ "${http_status}x" != "x" ]; then
+    if [ ${http_status} -eq 200 ]; then
+      if [ `echo ${cluster_status} |${EGREP_BIN} -e "^Running: "|$AWK_BIN '{print $2}'` == "true" ]; then
+        return ${OCF_SUCCESS}
+      fi
+    fi
+  fi
+  return ${OCF_NOT_RUNNING}
+
+}
+
+ipvs_cluster_validate_all() {
+
+  # Validate binary dependencies are executable
+  for req_bin in $AWK_BIN $CURL_BIN $EGREP_BIN; do
+    if [ ! -x "$req_bin" ]; then
+      ocf_log debug "Unable to execute (${req_bin})! Aborting.."
+      return ${OCF_ERR_INSTALLED}
+    fi
+  done
+
+  # Check if the IPVS supervisor knows about the cluster
+  if [ `$CURL_BIN -m ${CURL_TIMEOUT_SEC} -w '\nHTTP_Status: %{http_code}\n' -s "${SUPERVISOR_URL}/cluster/${OCF_RESKEY_cluster}" |${EGREP_BIN} -ce '^HTTP_Status: 200'` -eq 0 ]; then
+    return ${OCF_ERR_ARGS}
+  fi
+
+  return ${OCF_SUCCESS}
+
+}
+
+case $__OCF_ACTION in
+meta-data)	meta_data
+		exit ${OCF_SUCCESS}
+		;;
+start)		ipvs_cluster_start;;
+stop)		ipvs_cluster_stop;;
+monitor)	ipvs_cluster_monitor;;
+validate-all)	ipvs_cluster_validate_all;;
+usage|help)	ipvs_cluster_usage
+		exit ${OCF_SUCCESS}
+		;;
+*)		ipvs_cluster_usage
+		exit ${OCF_ERR_UNIMPLEMENTED}
+		;;
+esac
+
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc"
+exit $rc
