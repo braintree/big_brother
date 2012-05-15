@@ -15,11 +15,16 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = BigBrother::VERSION
 
-  gem.add_dependency "sinatra-synchrony", "~> 0.3.0"
-  gem.add_dependency "thin", "~> 1.3.1"
+  gem.add_dependency "thin",              "~> 1.3.1"
+  gem.add_dependency "sinatra",           "~> 1.0"
+  gem.add_dependency "rack-fiber_pool",   "~> 0.9"
+  gem.add_dependency "eventmachine",      "> 1.0.0.beta.1", "< 1.0.0.beta.100"
+  gem.add_dependency "em-http-request",   "~> 1.0"
+  gem.add_dependency "em-synchrony",      "~> 1.0"
+  gem.add_dependency "em-resolv-replace", "~> 1.1"
 
-  gem.add_development_dependency "rspec", "2.9.0"
-  gem.add_development_dependency "rack-test", "0.6.1"
+  gem.add_development_dependency "rspec",       "2.9.0"
+  gem.add_development_dependency "rack-test",   "0.6.1"
   gem.add_development_dependency "rake"
   gem.add_development_dependency "rake_commit", "0.13"
 end

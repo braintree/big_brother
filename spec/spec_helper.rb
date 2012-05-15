@@ -5,8 +5,6 @@ require 'rack/test'
 require 'big_brother'
 require "socket"
 
-Sinatra::Synchrony.patch_tests!
-
 Dir.glob("#{File.expand_path('support', File.dirname(__FILE__))}/**/*.rb").each { |f| require f }
 
 RSpec.configure do |config|
