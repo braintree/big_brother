@@ -1,6 +1,6 @@
 # BigBrother
 
-[![Build Status](https://secure.travis-ci.org/[braintree]/[big_brother].png)](http://travis-ci.org/[braintree]/[big_brother])
+[![Build Status](https://secure.travis-ci.org/braintree/big_brother.png)](http://travis-ci.org/braintree/big_brother)
 
 TODO: Write a gem description
 
