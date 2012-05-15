@@ -60,12 +60,13 @@ module BigBrother
 
         Signal.trap("HUP") do
           EM.synchrony do
+            BigBrother.logger.info "HUP trapped. Reconfiguring big brother"
             BigBrother.reconfigure
           end
         end
 
         EM.syslog_setup('0.0.0.0', 514)
-        EM.info "Starting big brother on port #{options[:Port]}"
+        BigBrother.logger.info "Starting big brother on port #{options[:Port]}"
       end
 
       super

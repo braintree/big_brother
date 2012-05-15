@@ -4,7 +4,7 @@ module BigBrother
 
     get "/" do
       BigBrother.clusters.map do |name, cluster|
-        "#{name} (#{cluster.fwmark}): #{cluster.monitored? ? "running" : "not running"}"
+        "#{cluster}: #{cluster.monitored? ? "running" : "not running"}"
       end.join("\n") + "\n"
     end
 

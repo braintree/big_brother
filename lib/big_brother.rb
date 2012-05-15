@@ -24,11 +24,12 @@ require 'thin/callback_rack_handler'
 
 module BigBrother
   class << self
-    attr_accessor :ipvs, :clusters, :config_dir
+    attr_accessor :ipvs, :clusters, :config_dir, :logger
   end
 
   self.ipvs = IPVS.new
   self.clusters = {}
+  self.logger = BigBrother::Logger.new
 
   def self.configure(filename)
     @config_file = filename

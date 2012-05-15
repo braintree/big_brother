@@ -25,11 +25,17 @@ module BigBrother
     end
 
     def self._add_nodes(cluster, addresses)
-      addresses.each { |address| BigBrother.ipvs.start_node(cluster.fwmark, address, 100) }
+      addresses.each do |address|
+        BigBrother.logger.info "adding #{address} to cluster #{cluster}"
+        BigBrother.ipvs.start_node(cluster.fwmark, address, 100)
+      end
     end
 
     def self._remove_nodes(cluster, addresses)
-      addresses.each { |address| BigBrother.ipvs.stop_node(cluster.fwmark, address) }
+      addresses.each do |address|
+        BigBrother.logger.info "removing #{address} to cluster #{cluster}"
+        BigBrother.ipvs.stop_node(cluster.fwmark, address)
+      end
     end
 
     def self._parse_nodes(nodes)

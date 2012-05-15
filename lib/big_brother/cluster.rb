@@ -19,6 +19,7 @@ module BigBrother
     end
 
     def start_monitoring!
+      BigBrother.logger.info "starting monitoring on cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       @nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, 100)
@@ -28,11 +29,14 @@ module BigBrother
     end
 
     def stop_monitoring!
+      BigBrother.logger.info "stopping monitoring on cluster #{to_s}"
       BigBrother.ipvs.stop_cluster(@fwmark)
+
       @monitored = false
     end
 
     def resume_monitoring!
+      BigBrother.logger.info "resuming monitoring on cluster #{to_s}"
       @monitored = true
     end
 
@@ -57,6 +61,10 @@ module BigBrother
       else
         node.current_health
       end
+    end
+
+    def to_s
+      "#{@name} (#{@fwmark})"
     end
   end
 end

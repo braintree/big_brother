@@ -22,6 +22,7 @@ RSpec.configure do |config|
   config.before(:each) do
     BigBrother.clusters.replace({})
     FileUtils.rm_rf(BigBrother.config_dir)
+    BigBrother.logger = NullLogger.new
   end
 end
 

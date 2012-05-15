@@ -92,4 +92,11 @@ describe BigBrother::Cluster do
       cluster.monitored?.should be_true
     end
   end
+
+  describe "#to_s" do
+    it "is the clusters name and fwmark" do
+      cluster = Factory.cluster(:name => 'name', :fwmark => 100)
+      cluster.to_s.should == "name (100)"
+    end
+  end
 end
