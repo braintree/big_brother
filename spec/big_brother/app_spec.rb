@@ -115,6 +115,7 @@ module BigBrother
         last_response.body.should == ""
         BigBrother.clusters['test'].should_not be_monitored
       end
+
       it "returns 'not found' if the cluster does not exist" do
         delete "/cluster/test"
 

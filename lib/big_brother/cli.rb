@@ -63,6 +63,9 @@ module BigBrother
             BigBrother.reconfigure
           end
         end
+
+        EM.syslog_setup('0.0.0.0', 514)
+        EM.info "Starting big brother on port #{options[:Port]}"
       end
 
       super
