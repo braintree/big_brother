@@ -77,5 +77,14 @@ describe BigBrother::Configuration do
 
       @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
     end
+
+    it "will remove clusters that are no longer configured" do
+      clusters = { 'two' => Factory.cluster(:fwmark => 2) }
+      ipvs_state = { '1' => ['127.0.0.1'] }
+
+      BigBrother::Configuration.synchronize_with_ipvs(clusters, ipvs_state)
+
+      @recording_executor.commands.should include("ipvsadm --delete-service --fwmark-service 1")
+    end
   end
 end

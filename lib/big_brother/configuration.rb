@@ -11,15 +11,19 @@ module BigBrother
     end
 
     def self.synchronize_with_ipvs(clusters, ipvs_state)
-      clusters.values.each do |cluster|
-        if ipvs_state.has_key?(cluster.fwmark.to_s)
-          cluster.resume_monitoring!
+      ipvs_state.each do |fwmark, running_nodes|
+        running_cluster = clusters.values.detect { |cluster| cluster.fwmark == fwmark.to_i }
 
-          running_nodes = ipvs_state[cluster.fwmark.to_s]
-          cluster_nodes = cluster.nodes.map(&:address)
+        if running_cluster.nil?
+          BigBrother.ipvs.stop_cluster(fwmark)
+        else
+          running_cluster.resume_monitoring!
 
-          _remove_nodes(cluster, running_nodes - cluster_nodes)
-          _add_nodes(cluster, cluster_nodes - running_nodes)
+          running_nodes = ipvs_state[running_cluster.fwmark.to_s]
+          cluster_nodes = running_cluster.nodes.map(&:address)
+
+          _remove_nodes(running_cluster, running_nodes - cluster_nodes)
+          _add_nodes(running_cluster, cluster_nodes - running_nodes)
         end
       end
     end

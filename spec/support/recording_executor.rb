@@ -7,5 +7,6 @@ class RecordingExecutor
 
   def invoke(command)
     @commands << command
+    ["", 0]
   end
 end
