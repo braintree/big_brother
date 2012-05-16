@@ -36,5 +36,32 @@ describe BigBrother::Node do
 
       @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
     end
+
+    it "does not run multiple ipvsadm commands if the health does not change" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+
+      node.monitor(cluster)
+      node.monitor(cluster)
+
+      @recording_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56"]
+    end
+
+    it "will run multiple ipvsadm commands if the health does change" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+
+      node.monitor(cluster)
+      node.monitor(cluster)
+      BigBrother::HealthFetcher.stub(:current_health).and_return(41)
+      node.monitor(cluster)
+
+      @recording_executor.commands.should == [
+        "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56",
+        "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 41"
+      ]
+    end
   end
 end

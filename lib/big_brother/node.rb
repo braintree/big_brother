@@ -8,10 +8,15 @@ module BigBrother
       @address = address
       @port = port
       @path = path
+      @weight = nil
     end
 
     def monitor(cluster)
-      BigBrother.ipvs.edit_node(cluster.fwmark, address, _determine_weight(cluster))
+      new_weight = _determine_weight(cluster)
+      if new_weight != @weight
+        BigBrother.ipvs.edit_node(cluster.fwmark, address, _determine_weight(cluster))
+        @weight = new_weight
+      end
     end
 
     def _determine_weight(cluster)
