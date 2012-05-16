@@ -48,38 +48,15 @@ describe BigBrother::Cluster do
       cluster.needs_check?.should be_false
     end
 
-    it "updates the weight for each node" do
-      node = Factory.node(:address => '127.0.0.1')
-      node.should_receive(:current_health).and_return(56)
-      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+    it "calls monitor on each of the nodes" do
+      node1 = Factory.node
+      node2 = Factory.node
+      cluster = Factory.cluster(:nodes => [node1, node2])
+
+      node1.should_receive(:monitor).with(cluster)
+      node2.should_receive(:monitor).with(cluster)
 
       cluster.monitor_nodes
-
-      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
-    end
-
-    it "sets the weight to 100 for each node if an up file exists" do
-      node = Factory.node(:address => '127.0.0.1')
-      node.stub(:current_health).and_return(56)
-      cluster = Factory.cluster(:name => 'test', :fwmark => 100, :nodes => [node])
-
-      BigBrother::StatusFile.new('up', 'test').create('Up for testing')
-
-      cluster.monitor_nodes
-
-      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
-    end
-
-    it "sets the weight to 0 for each node if a down file exists" do
-      node = Factory.node(:address => '127.0.0.1')
-      node.stub(:current_health).and_return(56)
-      cluster = Factory.cluster(:name => 'test', :fwmark => 100, :nodes => [node])
-
-      BigBrother::StatusFile.new('down', 'test').create('Down for testing')
-
-      cluster.monitor_nodes
-
-      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
     end
   end
 
