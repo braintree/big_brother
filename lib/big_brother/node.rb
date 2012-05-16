@@ -15,6 +15,20 @@ module BigBrother
       _parse_health(response)
     end
 
+    def monitor(cluster)
+      BigBrother.ipvs.edit_node(cluster.fwmark, address, _determine_weight(cluster))
+    end
+
+    def _determine_weight(cluster)
+      if cluster.up_file_exists?
+        100
+      elsif cluster.down_file_exists?
+        0
+      else
+        current_health
+      end
+    end
+
     def _get(url)
       EventMachine::HttpRequest.new(url).get
     end

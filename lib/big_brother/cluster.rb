@@ -46,25 +46,20 @@ module BigBrother
     end
 
     def monitor_nodes
-      @nodes.each do |node|
-        BigBrother.ipvs.edit_node(@fwmark, node.address, _determine_weight(node))
-      end
-
+      @nodes.each { |node| node.monitor(self) }
       @last_check = Time.now
-    end
-
-    def _determine_weight(node)
-      if @up_file.exists?
-        100
-      elsif @down_file.exists?
-        0
-      else
-        node.current_health
-      end
     end
 
     def to_s
       "#{@name} (#{@fwmark})"
+    end
+
+    def up_file_exists?
+      @up_file.exists?
+    end
+
+    def down_file_exists?
+      @down_file.exists?
     end
   end
 end

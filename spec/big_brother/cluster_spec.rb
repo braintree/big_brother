@@ -58,7 +58,7 @@ describe BigBrother::Cluster do
       @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
     end
 
-    it "sets the weight to 100 for each node if an upfile exists" do
+    it "sets the weight to 100 for each node if an up file exists" do
       node = Factory.node(:address => '127.0.0.1')
       node.stub(:current_health).and_return(56)
       cluster = Factory.cluster(:name => 'test', :fwmark => 100, :nodes => [node])
@@ -70,7 +70,7 @@ describe BigBrother::Cluster do
       @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
     end
 
-    it "sets the weight to 0 for each node if a downfile exists" do
+    it "sets the weight to 0 for each node if a down file exists" do
       node = Factory.node(:address => '127.0.0.1')
       node.stub(:current_health).and_return(56)
       cluster = Factory.cluster(:name => 'test', :fwmark => 100, :nodes => [node])
@@ -97,6 +97,28 @@ describe BigBrother::Cluster do
     it "is the clusters name and fwmark" do
       cluster = Factory.cluster(:name => 'name', :fwmark => 100)
       cluster.to_s.should == "name (100)"
+    end
+  end
+
+  describe "#up_file_exists?" do
+    it "returns true when an up file exists" do
+      cluster = Factory.cluster(:name => 'name')
+      cluster.up_file_exists?.should be_false
+
+      BigBrother::StatusFile.new('up', 'name').create('Up for testing')
+
+      cluster.up_file_exists?.should be_true
+    end
+  end
+
+  describe "#down_file_exists?" do
+    it "returns true when an down file exists" do
+      cluster = Factory.cluster(:name => 'name')
+      cluster.down_file_exists?.should be_false
+
+      BigBrother::StatusFile.new('down', 'name').create('down for testing')
+
+      cluster.down_file_exists?.should be_true
     end
   end
 end
