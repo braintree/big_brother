@@ -1,12 +1,15 @@
 module BigBrother
   class HealthFetcher
     def self.current_health(address, port, path)
-      http_response = EventMachine::HttpRequest.new("http://#{address}:#{port}#{path}").get
+      response = EventMachine::HttpRequest.new("http://#{address}:#{port}#{path}").get
+      response.response_header.status == 200 ? _parse_health(response) : 0
+    end
 
-      if http_response.response_header.has_key?('X_HEALTH')
-        http_response.response_header['X_HEALTH'].to_i
+    def self._parse_health(response)
+      if response.response_header.has_key?('X_HEALTH')
+        response.response_header['X_HEALTH'].to_i
       else
-        http_response.response.slice(/Health: (\d+)/, 1).to_i
+        response.response.slice(/Health: (\d+)/, 1).to_i
       end
     end
   end

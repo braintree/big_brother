@@ -5,7 +5,7 @@ describe BigBrother::HealthFetcher do
     run_in_reactor
 
     it "returns its health" do
-      StubServer.new(<<-HTTP, 0.25)
+      StubServer.new(<<-HTTP)
 HTTP/1.0 200 OK
 Connection: close
 
@@ -14,8 +14,18 @@ HTTP
       BigBrother::HealthFetcher.current_health("127.0.0.1", 8081, "/test/status").should == 59
     end
 
+    it "returns 0 when the HTTP status code is not 200" do
+      StubServer.new(<<-HTTP)
+HTTP/1.0 503 OK
+Connection: close
+
+Health: 19
+HTTP
+      BigBrother::HealthFetcher.current_health("127.0.0.1", 8081, "/test/status").should == 0
+    end
+
     it "returns 0 for an unknown service" do
-      StubServer.new(<<-HTTP, 0.25)
+      StubServer.new(<<-HTTP)
 HTTP/1.0 503 Service Unavailable
 Connection: close
 HTTP
@@ -27,7 +37,7 @@ HTTP
     end
 
     it "returns the health if it is passed in a header" do
-      StubServer.new(<<-HTTP, 0.25)
+      StubServer.new(<<-HTTP)
 HTTP/1.0 200 OK
 Connection: close
 X-Health: 61
