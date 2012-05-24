@@ -17,8 +17,9 @@ module BigBrother
 
     def monitor(cluster)
       new_weight = _determine_weight(cluster)
+      return unless cluster.monitored?
       if new_weight != @weight
-        BigBrother.ipvs.edit_node(cluster.fwmark, address, _determine_weight(cluster))
+        BigBrother.ipvs.edit_node(cluster.fwmark, address, new_weight)
         @weight = new_weight
       end
     end

@@ -7,6 +7,8 @@ describe BigBrother::Node do
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @recording_executor.commands.clear
 
       node.monitor(cluster)
 
@@ -17,6 +19,8 @@ describe BigBrother::Node do
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @recording_executor.commands.clear
 
       BigBrother::StatusFile.new('up', 'test').create('Up for testing')
 
@@ -29,6 +33,8 @@ describe BigBrother::Node do
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @recording_executor.commands.clear
 
       BigBrother::StatusFile.new('down', 'test').create('Down for testing')
 
@@ -41,6 +47,8 @@ describe BigBrother::Node do
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @recording_executor.commands.clear
 
       node.monitor(cluster)
       node.monitor(cluster)
@@ -52,6 +60,8 @@ describe BigBrother::Node do
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @recording_executor.commands.clear
 
       node.monitor(cluster)
       node.monitor(cluster)
@@ -62,6 +72,18 @@ describe BigBrother::Node do
         "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56",
         "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 41"
       ]
+    end
+
+    it "does not update the weight if the cluster is no longer monitored" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.stop_monitoring!
+
+      @recording_executor.commands.clear
+      node.monitor(cluster)
+
+      @recording_executor.commands.should == []
     end
   end
 end
