@@ -123,5 +123,18 @@ module BigBrother
         last_response.body.should == "Cluster test not found"
       end
     end
+
+    describe "error handling" do
+      it "logs exceptions" do
+        BigBrother.clusters['test'] = "this is not a cluster"
+
+        BigBrother.logger.should_receive(:info).with(/^Error:/)
+        BigBrother.logger.should_receive(:info).with(/big_brother/)
+
+        put "/cluster/test"
+
+        last_response.status.should == 500
+      end
+    end
   end
 end
