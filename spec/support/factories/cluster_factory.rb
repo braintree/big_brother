@@ -6,7 +6,7 @@ class Factory
         'fwmark' => overrides.fetch(:fwmark, 100),
         'scheduler' => overrides.fetch(:scheduler, 'wrr'),
         'check_interval' => overrides.fetch(:check_interval, 1),
-        'nodes' => overrides.fetch(:nodes, [])
+        'nodes' => overrides.fetch(:nodes, [Factory.node])
       }
     )
   end

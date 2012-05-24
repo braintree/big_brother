@@ -57,7 +57,7 @@ module BigBrother
         put "/cluster/test"
 
         last_response.status.should == 200
-        last_response.body.should == ""
+        last_response.body.should == "OK"
         BigBrother.clusters['test'].should be_monitored
       end
 
@@ -86,7 +86,7 @@ module BigBrother
         put "/cluster/test"
 
         last_response.status.should == 200
-        last_response.body.should == ""
+        last_response.body.should == "OK"
         BigBrother.clusters['test'].should be_monitored
         @recording_executor.commands.first.should == "ipvsadm --add-service --fwmark-service 100 --scheduler wrr"
         @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
@@ -102,7 +102,7 @@ module BigBrother
         delete "/cluster/test"
 
         last_response.status.should == 200
-        last_response.body.should == ""
+        last_response.body.should == "OK"
         BigBrother.clusters['test'].should_not be_monitored
       end
 

@@ -20,11 +20,13 @@ module BigBrother
     put "/cluster/:name" do |name|
       halt 304 if @cluster.monitored?
       @cluster.start_monitoring!
+      [200, "OK"]
     end
 
     delete "/cluster/:name" do |name|
       halt 304 unless @cluster.monitored?
       @cluster.stop_monitoring!
+      [200, "OK"]
     end
   end
 end

@@ -58,6 +58,9 @@ describe BigBrother::Cluster do
   describe "#monitor_nodes" do
     it "marks the cluster as no longer requiring monitoring" do
       cluster = Factory.cluster
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(10)
+
       cluster.start_monitoring!
       cluster.needs_check?.should be_true
       cluster.monitor_nodes
