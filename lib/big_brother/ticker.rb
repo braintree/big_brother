@@ -20,6 +20,7 @@ module BigBrother
     def self.tick
       @outstanding_ticks += 1
       BigBrother.clusters.values.select(&:needs_check?).each do |cluster|
+        BigBrother.logger.debug("Monitoring cluster #{cluster.name}")
         cluster.monitor_nodes
       end
       @outstanding_ticks -= 1

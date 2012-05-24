@@ -10,6 +10,7 @@ module BigBrother
                   "BigBrother configuration file", "Default: /etc/big_brother.conf") { |v| options[:big_brother_config] = v }
           opts.on("-D", "--data-dir=path", String,
                   "BigBrother data directory", "Default: /etc/big_brother") { |v| options[:config_dir] = v }
+          opts.on("-v", "--verbose", "Log more verbosely") { options[:verbose] = true }
 
           opts.separator ""
 
@@ -45,11 +46,12 @@ module BigBrother
     end
 
     def start
-      if !File.exists?(options[:big_brother_config])
+      unless File.exists?(options[:big_brother_config])
         puts "Could not find #{options[:big_brother_config]}. Specify correct location with -c file"
         exit 1
       end
 
+      BigBrother.logger.level = BigBrother::Logger::Level::DEBUG if options[:verbose]
       BigBrother.config_dir = options[:config_dir]
 
       Thin::Callbacks.after_connect do

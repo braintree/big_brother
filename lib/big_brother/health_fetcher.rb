@@ -1,7 +1,10 @@
 module BigBrother
   class HealthFetcher
     def self.current_health(address, port, path)
-      response = EventMachine::HttpRequest.new("http://#{address}:#{port}#{path}").get
+      url = "http://#{address}:#{port}#{path}"
+
+      BigBrother.logger.debug("Fetching health from #{url}")
+      response = EventMachine::HttpRequest.new(url).get
       response.response_header.status == 200 ? _parse_health(response) : 0
     end
 

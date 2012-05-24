@@ -1,6 +1,6 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes
+    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name
 
     def initialize(name, attributes = {})
       @name = name

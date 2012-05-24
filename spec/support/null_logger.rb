@@ -4,4 +4,7 @@ class NullLogger
 
   def info(msg)
   end
+
+  def debug(msg)
+  end
 end
