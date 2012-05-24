@@ -33,6 +33,7 @@ module BigBrother
       BigBrother.ipvs.stop_cluster(@fwmark)
 
       @monitored = false
+      @nodes.each(&:invalidate_weight!)
     end
 
     def resume_monitoring!

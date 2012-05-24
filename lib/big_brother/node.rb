@@ -11,6 +11,10 @@ module BigBrother
       @weight = nil
     end
 
+    def invalidate_weight!
+      @weight = nil
+    end
+
     def monitor(cluster)
       new_weight = _determine_weight(cluster)
       if new_weight != @weight
