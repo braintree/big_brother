@@ -3,6 +3,7 @@ test1:
   checkInterval: 1
   scheduler: wrr
   fwmark: 1
+  persistent: 20
   nodes:
   - address: 127.0.0.1
     port: 9001

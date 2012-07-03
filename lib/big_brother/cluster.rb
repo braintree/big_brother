@@ -1,11 +1,12 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name
+    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :persistent
 
     def initialize(name, attributes = {})
       @name = name
       @fwmark = attributes['fwmark']
       @scheduler = attributes['scheduler']
+      @persistent = attributes.fetch('persistent', 300)
       @check_interval = attributes.fetch('check_interval', 1)
       @monitored = false
       @nodes = attributes.fetch('nodes', [])
@@ -20,7 +21,7 @@ module BigBrother
 
     def start_monitoring!
       BigBrother.logger.info "starting monitoring on cluster #{to_s}"
-      BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
+      BigBrother.ipvs.start_cluster(@fwmark, @scheduler, @persistent)
       @nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, 100)
       end

@@ -8,6 +8,7 @@ describe BigBrother::Configuration do
       clusters['test1'].check_interval.should == 1
       clusters['test1'].scheduler.should == 'wrr'
       clusters['test1'].fwmark.should == 1
+      clusters['test1'].persistent.should == 20
 
       clusters['test2'].check_interval.should == 1
       clusters['test2'].scheduler.should == 'wrr'

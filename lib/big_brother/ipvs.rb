@@ -4,8 +4,8 @@ module BigBrother
       @executor = executor
     end
 
-    def start_cluster(fwmark, scheduler)
-      @executor.invoke("ipvsadm --add-service --fwmark-service #{fwmark} --scheduler #{scheduler}")
+    def start_cluster(fwmark, scheduler, persistent)
+      @executor.invoke("ipvsadm --add-service --fwmark-service #{fwmark} --scheduler #{scheduler} --persistent #{persistent}")
     end
 
     def stop_cluster(fwmark)
