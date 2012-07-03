@@ -42,7 +42,6 @@ Stopped:
 
     error do
       e = request.env['sinatra.error']
-      p e
 
       BigBrother.logger.info "Error: #{e}"
       BigBrother.logger.info e.backtrace.join("\n")
