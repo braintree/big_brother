@@ -47,8 +47,8 @@ module BigBrother
     end
 
     def monitor_nodes
-      @nodes.each { |node| node.monitor(self) }
       @last_check = Time.now
+      @nodes.each { |node| node.monitor(self) }
     end
 
     def to_s
