@@ -109,6 +109,28 @@ module BigBrother
         @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
         @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100")
       end
+
+      it "attempts to synchronize the nodes in the cluster" do
+        @stub_executor.add_response("ipvsadm --save --numeric", <<-OUTPUT, 0)
+-A -f 100 -s wrr
+-a -f 100 -r 127.0.1.223:80 -i -w 1
+-a -f 100 -r 127.0.1.224:80 -i -w 1
+-A -f 2 -s wrr
+-a -f 2 -r 10.0.1.225:80 -i -w 1
+      OUTPUT
+        BigBrother.configure(TEST_CONFIG)
+        first = Factory.node(:address => '127.0.1.223')
+        second = Factory.node(:address => '127.0.1.225')
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 100, :scheduler => 'wrr', :nodes => [first, second])
+
+        put "/cluster/test"
+
+        last_response.status.should == 304
+        last_response.body.should == ""
+        BigBrother.clusters['test'].should be_monitored
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.1.225 --ipip --weight 100")
+        @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 100 --real-server 127.0.1.224")
+      end
     end
 
     describe "DELETE /cluster/:name" do

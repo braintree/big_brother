@@ -21,6 +21,7 @@ module BigBrother
     end
 
     put "/cluster/:name" do |name|
+      @cluster.synchronize!
       halt 304 if @cluster.monitored?
       @cluster.start_monitoring!
       [200, "OK"]
