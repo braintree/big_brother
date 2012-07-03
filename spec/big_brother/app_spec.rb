@@ -17,10 +17,10 @@ module BigBrother
         get "/"
         last_response.status.should == 200
         last_response.body.should include("Big Brother: #{BigBrother::VERSION}")
-        last_response.body.should include("one (1): not running")
-        last_response.body.should include("two (2): not running")
-        last_response.body.should include("three (3): running")
-        last_response.body.should include("four (4): not running")
+        last_response.body.should include("- one (1)")
+        last_response.body.should include("- two (2)")
+        last_response.body.should include("+ three (3)")
+        last_response.body.should include("- four (4)")
       end
     end
 

@@ -5,11 +5,16 @@ module BigBrother
     set :raise_errors, false
 
     get "/" do
-      clusters = BigBrother.clusters.map do |name, cluster|
-        "#{cluster}: #{cluster.monitored? ? "running" : "not running"}"
-      end.join("\n")
+      running, stopped = BigBrother.clusters.values.partition(&:monitored?)
 
-      [200, "Big Brother: #{BigBrother::VERSION}\n\n#{clusters}\n"]
+      [200, <<-CONTENT]
+Big Brother: #{BigBrother::VERSION}
+
+Running:
+#{running.map { |cluster| "+ #{cluster}\n" }.join}
+Stopped:
+#{stopped.map { |cluster| "- #{cluster}\n" }.join}
+      CONTENT
     end
 
     before "/cluster/:name" do |name|
@@ -37,6 +42,7 @@ module BigBrother
 
     error do
       e = request.env['sinatra.error']
+      p e
 
       BigBrother.logger.info "Error: #{e}"
       BigBrother.logger.info e.backtrace.join("\n")
