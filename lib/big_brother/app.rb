@@ -5,9 +5,11 @@ module BigBrother
     set :raise_errors, false
 
     get "/" do
-      BigBrother.clusters.map do |name, cluster|
+      clusters = BigBrother.clusters.map do |name, cluster|
         "#{cluster}: #{cluster.monitored? ? "running" : "not running"}"
-      end.join("\n") + "\n"
+      end.join("\n")
+
+      [200, "Big Brother: #{BigBrother::VERSION}\n\n#{clusters}\n"]
     end
 
     before "/cluster/:name" do |name|
