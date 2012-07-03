@@ -16,6 +16,7 @@ module BigBrother
     end
 
     get "/cluster/:name" do |name|
+      @cluster.synchronize! unless @cluster.monitored?
       [200, "Running: #{@cluster.monitored?}"]
     end
 

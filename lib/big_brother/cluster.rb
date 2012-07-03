@@ -41,6 +41,19 @@ module BigBrother
       @monitored = true
     end
 
+    def synchronize!
+      ipvs_state = BigBrother.ipvs.running_configuration
+      if ipvs_state.has_key?(fwmark.to_s)
+        resume_monitoring!
+
+        running_nodes = ipvs_state[fwmark.to_s]
+        cluster_nodes = nodes.map(&:address)
+
+        _remove_nodes(running_nodes - cluster_nodes)
+        _add_nodes(cluster_nodes - running_nodes)
+      end
+    end
+
     def needs_check?
       return false unless monitored?
       @last_check + @check_interval < Time.now
@@ -61,6 +74,20 @@ module BigBrother
 
     def down_file_exists?
       @down_file.exists?
+    end
+
+    def _add_nodes(addresses)
+      addresses.each do |address|
+        BigBrother.logger.info "adding #{address} to cluster #{self}"
+        BigBrother.ipvs.start_node(fwmark, address, 100)
+      end
+    end
+
+    def _remove_nodes(addresses)
+      addresses.each do |address|
+        BigBrother.logger.info "removing #{address} to cluster #{self}"
+        BigBrother.ipvs.stop_node(fwmark, address)
+      end
     end
   end
 end

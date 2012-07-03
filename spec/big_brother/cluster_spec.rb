@@ -89,6 +89,53 @@ describe BigBrother::Cluster do
     end
   end
 
+  describe "synchronize!" do
+    it "monitors clusters that were already monitored" do
+      BigBrother.ipvs.stub(:running_configuration).and_return('1' => ['127.0.0.1'])
+      cluster = Factory.cluster(:fwmark => 1)
+
+      cluster.synchronize!
+
+      cluster.should be_monitored
+    end
+
+    it "does not monitor clusters that were already monitored" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({})
+      cluster = Factory.cluster(:fwmark => 1)
+
+      cluster.synchronize!
+
+      cluster.should_not be_monitored
+    end
+
+    it "does not attempt to re-add the services it was monitoring" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+      cluster = Factory.cluster(:fwmark => 1, :nodes => [Factory.node(:address => '127.0.0.1')])
+
+      cluster.synchronize!
+
+      @recording_executor.commands.should be_empty
+    end
+
+    it "removes nodes that are no longer part of the cluster" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '127.0.1.1']})
+      cluster = Factory.cluster(:fwmark => 1, :nodes => [Factory.node(:address => '127.0.0.1')])
+
+      cluster.synchronize!
+
+      @recording_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1"
+    end
+
+    it "adds new nodes to the cluster" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+      cluster = Factory.cluster(:fwmark => 1, :nodes => [Factory.node(:address => '127.0.0.1'), Factory.node(:address => "127.0.1.1")])
+
+      cluster.synchronize!
+
+      @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
+    end
+  end
+
   describe "#to_s" do
     it "is the clusters name and fwmark" do
       cluster = Factory.cluster(:name => 'name', :fwmark => 100)

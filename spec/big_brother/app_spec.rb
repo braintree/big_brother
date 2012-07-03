@@ -43,6 +43,25 @@ module BigBrother
         last_response.body.should == "Running: true"
       end
 
+      it "attempts to synchronize the node if it is not running" do
+        playback = PlaybackExecutor.new
+        playback.add_response(<<-OUTPUT, 0)
+-A -f 1 -s wrr
+-a -f 1 -r 10.0.1.223:80 -i -w 1
+-a -f 1 -r 10.0.1.224:80 -i -w 1
+-A -f 2 -s wrr
+-a -f 2 -r 10.0.1.225:80 -i -w 1
+      OUTPUT
+        BigBrother.ipvs = BigBrother::IPVS.new(playback)
+        BigBrother.configure(TEST_CONFIG)
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 1)
+
+        get "/cluster/test"
+
+        last_response.status.should == 200
+        last_response.body.should == "Running: true"
+      end
+
       it "returns a 404 http status when the cluster is not found" do
         get "/cluster/not_found"
 
