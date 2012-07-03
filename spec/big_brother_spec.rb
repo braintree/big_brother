@@ -74,7 +74,7 @@ EOF
       end
       BigBrother.configure(config_file)
       BigBrother.clusters['test1'].start_monitoring!
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
 
       BigBrother.start_ticker!
 
@@ -96,7 +96,7 @@ EOF
       BigBrother.reconfigure
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
 
-      @recording_executor.commands.first.should include("--weight 50")
+      @stub_executor.commands.first.should include("--weight 50")
     end
   end
 end

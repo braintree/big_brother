@@ -24,12 +24,12 @@ describe BigBrother::Ticker do
           ]
         )
         BigBrother.clusters['test'].start_monitoring!
-        @recording_executor.commands.clear
+        @stub_executor.commands.clear
 
         BigBrother::Ticker.tick
 
-        @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74")
-        @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server #{public_ip_address} --ipip --weight 76")
+        @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74")
+        @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server #{public_ip_address} --ipip --weight 76")
       end
 
       it "only monitors a cluster once in the given interval" do
@@ -38,12 +38,12 @@ describe BigBrother::Ticker do
           :nodes => [Factory.node(:address  => '127.0.0.1', :port => 8081)]
         )
         BigBrother.clusters['test'].start_monitoring!
-        @recording_executor.commands.clear
+        @stub_executor.commands.clear
 
         BigBrother::Ticker.tick
         BigBrother::Ticker.tick
 
-        @recording_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74"]
+        @stub_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74"]
       end
     end
 

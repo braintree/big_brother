@@ -44,15 +44,13 @@ module BigBrother
       end
 
       it "attempts to synchronize the node if it is not running" do
-        playback = PlaybackExecutor.new
-        playback.add_response(<<-OUTPUT, 0)
+        @stub_executor.add_response("ipvsadm --save --numeric", <<-OUTPUT, 0)
 -A -f 1 -s wrr
 -a -f 1 -r 10.0.1.223:80 -i -w 1
 -a -f 1 -r 10.0.1.224:80 -i -w 1
 -A -f 2 -s wrr
 -a -f 2 -r 10.0.1.225:80 -i -w 1
       OUTPUT
-        BigBrother.ipvs = BigBrother::IPVS.new(playback)
         BigBrother.configure(TEST_CONFIG)
         BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 1)
 
@@ -107,9 +105,9 @@ module BigBrother
         last_response.status.should == 200
         last_response.body.should == "OK"
         BigBrother.clusters['test'].should be_monitored
-        @recording_executor.commands.first.should == "ipvsadm --add-service --fwmark-service 100 --scheduler wrr"
-        @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
-        @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100")
+        @stub_executor.commands.should include("ipvsadm --add-service --fwmark-service 100 --scheduler wrr")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100")
       end
     end
 

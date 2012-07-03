@@ -13,8 +13,8 @@ RSpec.configure do |config|
 
   config.around(:each) do |spec|
     ipvs = BigBrother.ipvs
-    @recording_executor = RecordingExecutor.new
-    BigBrother.ipvs = BigBrother::IPVS.new(@recording_executor)
+    @stub_executor = StubExecutor.new
+    BigBrother.ipvs = BigBrother::IPVS.new(@stub_executor)
     spec.run
     BigBrother.ipvs = ipvs
   end

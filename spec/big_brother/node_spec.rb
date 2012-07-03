@@ -8,11 +8,11 @@ describe BigBrother::Node do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
 
       node.monitor(cluster)
 
-      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
     end
 
     it "sets the weight to 100 for each node if an up file exists" do
@@ -20,13 +20,13 @@ describe BigBrother::Node do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
 
       BigBrother::StatusFile.new('up', 'test').create('Up for testing')
 
       node.monitor(cluster)
 
-      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
     end
 
     it "sets the weight to 0 for each node if a down file exists" do
@@ -34,13 +34,13 @@ describe BigBrother::Node do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
 
       BigBrother::StatusFile.new('down', 'test').create('Down for testing')
 
       node.monitor(cluster)
 
-      @recording_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
     end
 
     it "does not run multiple ipvsadm commands if the health does not change" do
@@ -48,12 +48,12 @@ describe BigBrother::Node do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
 
       node.monitor(cluster)
       node.monitor(cluster)
 
-      @recording_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56"]
+      @stub_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56"]
     end
 
     it "will run multiple ipvsadm commands if the health does change" do
@@ -61,14 +61,14 @@ describe BigBrother::Node do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
 
       node.monitor(cluster)
       node.monitor(cluster)
       BigBrother::HealthFetcher.stub(:current_health).and_return(41)
       node.monitor(cluster)
 
-      @recording_executor.commands.should == [
+      @stub_executor.commands.should == [
         "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56",
         "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 41"
       ]
@@ -80,10 +80,10 @@ describe BigBrother::Node do
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.stop_monitoring!
 
-      @recording_executor.commands.clear
+      @stub_executor.commands.clear
       node.monitor(cluster)
 
-      @recording_executor.commands.should == []
+      @stub_executor.commands.should == []
     end
   end
 end

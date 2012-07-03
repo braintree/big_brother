@@ -13,7 +13,7 @@ describe BigBrother::Cluster do
       cluster = Factory.cluster(:fwmark => 100, :scheduler => 'wrr')
 
       cluster.start_monitoring!
-      @recording_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
+      @stub_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
     end
   end
 
@@ -26,7 +26,7 @@ describe BigBrother::Cluster do
 
       cluster.stop_monitoring!
       cluster.should_not be_monitored
-      @recording_executor.commands.should include("ipvsadm --delete-service --fwmark-service 100")
+      @stub_executor.commands.should include("ipvsadm --delete-service --fwmark-service 100")
     end
 
     it "invalidates recorded weights, so it properly updates after a stop/start" do
@@ -42,7 +42,7 @@ describe BigBrother::Cluster do
       cluster.start_monitoring!
       cluster.monitor_nodes
 
-      @recording_executor.commands.last.should == "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10"
+      @stub_executor.commands.last.should == "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10"
     end
   end
 
@@ -114,7 +114,7 @@ describe BigBrother::Cluster do
 
       cluster.synchronize!
 
-      @recording_executor.commands.should be_empty
+      @stub_executor.commands.should be_empty
     end
 
     it "removes nodes that are no longer part of the cluster" do
@@ -123,7 +123,7 @@ describe BigBrother::Cluster do
 
       cluster.synchronize!
 
-      @recording_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1"
+      @stub_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1"
     end
 
     it "adds new nodes to the cluster" do
@@ -132,7 +132,7 @@ describe BigBrother::Cluster do
 
       cluster.synchronize!
 
-      @recording_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
     end
   end
 
