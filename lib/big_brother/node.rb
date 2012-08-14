@@ -24,6 +24,10 @@ module BigBrother
       end
     end
 
+    def ==(other)
+      address == other.address && port == other.port
+    end
+
     def _determine_weight(cluster)
       if cluster.up_file_exists?
         100

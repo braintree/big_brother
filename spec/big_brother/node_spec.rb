@@ -86,4 +86,18 @@ describe BigBrother::Node do
       @stub_executor.commands.should == []
     end
   end
+
+  describe "#==" do
+    it "is true when two nodes have the same address and port" do
+      node1 = Factory.node(:address => "127.0.0.1", :port => "8000")
+      node2 = Factory.node(:address => "127.0.0.1", :port => "8001")
+      node1.should_not == node2
+
+      node2 = Factory.node(:address => "127.0.0.2", :port => "8000")
+      node1.should_not == node2
+
+      node2 = Factory.node(:address => "127.0.0.1", :port => "8000")
+      node1.should == node2
+    end
+  end
 end

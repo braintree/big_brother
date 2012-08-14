@@ -69,6 +69,10 @@ module BigBrother
       "#{@name} (#{@fwmark})"
     end
 
+    def ==(other)
+      fwmark == other.fwmark
+    end
+
     def up_file_exists?
       @up_file.exists?
     end

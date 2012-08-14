@@ -143,6 +143,18 @@ describe BigBrother::Cluster do
     end
   end
 
+  describe "#==" do
+    it "is true if two clusters have the same fwmark" do
+      cluster1 = Factory.cluster(:fwmark => '100')
+      cluster2 = Factory.cluster(:fwmark => '200')
+
+      cluster1.should_not == cluster2
+
+      cluster2 = Factory.cluster(:fwmark => '100')
+      cluster1.should == cluster2
+    end
+  end
+
   describe "#up_file_exists?" do
     it "returns true when an up file exists" do
       cluster = Factory.cluster(:name => 'name')
