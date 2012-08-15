@@ -16,6 +16,10 @@ module BigBrother
       @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
     end
 
+    def downpage_enabled?
+      @downpage_enabled
+    end
+
     def monitored?
       @monitored
     end
@@ -64,6 +68,8 @@ module BigBrother
     def monitor_nodes
       @last_check = Time.now
       @nodes.each { |node| node.monitor(self) }
+
+      _check_downpage
     end
 
     def to_s
@@ -87,6 +93,26 @@ module BigBrother
         BigBrother.logger.info "adding #{address} to cluster #{self}"
         BigBrother.ipvs.start_node(fwmark, address, 100)
       end
+    end
+
+    def _add_maintenance_node
+      BigBrother.logger.info "adding 127.0.0.1 to cluster #{self}"
+      BigBrother.ipvs.start_node(fwmark, '127.0.0.1', 1)
+    end
+
+    def _check_downpage
+      total_health = @nodes.collect{ |n| n.weight || 0 }.reduce(:+)
+      if total_health <= 0
+        _add_maintenance_node unless downpage_enabled?
+        @downpage_enabled = true
+      else
+        _remove_maintenance_node if downpage_enabled?
+        @downpage_enabled = false
+      end
+    end
+
+    def _remove_maintenance_node
+      BigBrother.ipvs.stop_node(fwmark, '127.0.0.1')
     end
 
     def _remove_nodes(addresses)

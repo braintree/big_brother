@@ -77,6 +77,47 @@ describe BigBrother::Cluster do
 
       cluster.monitor_nodes
     end
+
+    it "enables a downpage if none of the nodes have health > 0" do
+      node1 = Factory.node
+      node2 = Factory.node
+      cluster = Factory.cluster(:nodes => [node1, node2])
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(0)
+
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+      cluster.downpage_enabled?.should be_true
+    end
+
+    it "adds a downpage node to IPVS when down" do
+      node1 = Factory.node
+      node2 = Factory.node
+      cluster = Factory.cluster(:nodes => [node1, node2], :fwmark => 1)
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(0)
+
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+
+      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1 --ipip --weight 1"
+    end
+
+    it "removes downpage node from IPVS if it exists and cluster is up" do
+      node1 = Factory.node
+      node2 = Factory.node
+      cluster = Factory.cluster(:nodes => [node1, node2], :fwmark => 1)
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(0)
+
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(10)
+      cluster.monitor_nodes
+
+      @stub_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1"
+    end
   end
 
   describe "#resume_monitoring!" do
