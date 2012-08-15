@@ -4,7 +4,7 @@ module BigBrother
       yaml = YAML.load(File.read(file))
       assoc_array = yaml.map do |name, values|
         new_nodes = _parse_nodes(values.delete('nodes'), current_clusters[name])
-        [name, Cluster.new(name, values.merge('nodes' => new_nodes))]
+        [name, Cluster.new(name, _symbolize_keys(values).merge(:nodes => new_nodes))]
       end
 
       Hash[assoc_array]

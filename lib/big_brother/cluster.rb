@@ -4,16 +4,16 @@ module BigBrother
 
     def initialize(name, attributes = {})
       @name = name
-      @fwmark = attributes['fwmark']
-      @scheduler = attributes['scheduler']
-      @persistent = attributes.fetch('persistent', 300)
-      @check_interval = attributes.fetch('check_interval', 1)
+      @fwmark = attributes[:fwmark]
+      @scheduler = attributes[:scheduler]
+      @persistent = attributes.fetch(:persistent, 300)
+      @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
-      @nodes = attributes.fetch('nodes', [])
+      @nodes = attributes.fetch(:nodes, [])
       @last_check = Time.new(0)
       @up_file = BigBrother::StatusFile.new('up', @name)
       @down_file = BigBrother::StatusFile.new('down', @name)
-      @ramp_up_time = attributes.fetch('ramp_up_time', 60)
+      @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
     end
 
     def monitored?
