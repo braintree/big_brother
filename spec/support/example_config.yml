@@ -4,6 +4,7 @@ test1:
   scheduler: wrr
   fwmark: 1
   persistent: 20
+  ramp_up_time: 120
   nodes:
   - address: 127.0.0.1
     port: 9001

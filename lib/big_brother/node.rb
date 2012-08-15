@@ -9,6 +9,11 @@ module BigBrother
       @port = port
       @path = path
       @weight = nil
+      @start_time = Time.now.to_i
+    end
+
+    def age
+      Time.now.to_i - @start_time
     end
 
     def invalidate_weight!
@@ -34,7 +39,16 @@ module BigBrother
       elsif cluster.down_file_exists?
         0
       else
-        BigBrother::HealthFetcher.current_health(@address, @port, @path)
+        _weight_health(BigBrother::HealthFetcher.current_health(@address, @port, @path), cluster.ramp_up_time)
+      end
+    end
+
+    def _weight_health(health, ramp_up_time)
+      current_age = age
+      if current_age < ramp_up_time
+        (health * (current_age / ramp_up_time.to_f)).to_i
+      else
+        health
       end
     end
   end

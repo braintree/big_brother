@@ -66,6 +66,7 @@ test1:
   checkInterval: 1
   scheduler: wrr
   fwmark: 1
+  ramp_up_time: 0
   nodes:
   - address: 127.0.0.1
     port: 9001

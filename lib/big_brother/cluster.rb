@@ -1,6 +1,6 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :persistent
+    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :persistent, :ramp_up_time
 
     def initialize(name, attributes = {})
       @name = name
@@ -13,6 +13,7 @@ module BigBrother
       @last_check = Time.new(0)
       @up_file = BigBrother::StatusFile.new('up', @name)
       @down_file = BigBrother::StatusFile.new('down', @name)
+      @ramp_up_time = attributes.fetch('ramp_up_time', 60)
     end
 
     def monitored?
