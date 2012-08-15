@@ -2,7 +2,7 @@ require 'net/http'
 
 module BigBrother
   class Node
-    attr_reader :address, :port, :path, :start_time
+    attr_reader :address, :port, :path, :start_time, :weight
 
     def initialize(attributes={})
       @address = attributes[:address]

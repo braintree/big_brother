@@ -58,7 +58,7 @@ EOF
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
     end
 
-    it "maintains the age of existing nodes after reconfiguring" do
+    it "maintains the start_time and weight of existing nodes after reconfiguring" do
       Time.stub(:now).and_return(Time.at(1345043600))
       config_file = Tempfile.new('config.yml')
       File.open(config_file, 'w') do |f|
@@ -78,7 +78,8 @@ EOF
       BigBrother.start_ticker!
 
       Time.stub(:now).and_return(Time.at(1345043700))
-      age = BigBrother.clusters['test1'].nodes.first.age
+      start_time = BigBrother.clusters['test1'].nodes[0].start_time
+      weight = BigBrother.clusters['test1'].nodes[0].weight
 
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
@@ -97,8 +98,10 @@ test1:
 EOF
       end
       BigBrother.reconfigure
-      BigBrother.clusters['test1'].nodes[0].age.should == age
-      BigBrother.clusters['test1'].nodes[1].age.should == 0
+      BigBrother.clusters['test1'].nodes[0].start_time.should == start_time
+      BigBrother.clusters['test1'].nodes[0].weight.should == weight
+      BigBrother.clusters['test1'].nodes[1].start_time.should == 1345043700
+      BigBrother.clusters['test1'].nodes[1].weight.should be_nil
     end
 
     it "stops the ticker and reconfigures after it has finished all its ticks" do

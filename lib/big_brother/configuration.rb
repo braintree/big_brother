@@ -15,7 +15,7 @@ module BigBrother
         old_node = _find_node_in_cluster(current_cluster, values['address'], values['port'])
 
         node_attrs = _symbolize_keys(values)
-        node_attrs.merge!({:start_time => old_node.start_time}) if old_node
+        node_attrs.merge!({:start_time => old_node.start_time, :weight => old_node.weight}) if old_node
 
         Node.new(node_attrs)
       end
