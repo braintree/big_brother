@@ -11,7 +11,7 @@ describe BigBrother::Configuration do
       clusters['test1'].persistent.should == 20
       clusters['test1'].ramp_up_time.should == 120
 
-      clusters['test2'].check_interval.should == 1
+      clusters['test2'].check_interval.should == 2
       clusters['test2'].scheduler.should == 'wrr'
       clusters['test2'].fwmark.should == 2
       clusters['test2'].ramp_up_time.should == 60

@@ -28,7 +28,7 @@ HTTP
         f.puts(<<-EOF)
 ---
 test1:
-  checkInterval: 1
+  check_interval: 1
   scheduler: wrr
   fwmark: 1
   nodes:
@@ -45,7 +45,7 @@ EOF
         f.puts(<<-EOF)
 ---
 test1:
-  checkInterval: 1
+  check_interval: 1
   scheduler: wrr
   fwmark: 1
   nodes:
@@ -65,7 +65,7 @@ EOF
         f.puts(<<-EOF)
 ---
 test1:
-  checkInterval: 1
+  check_interval: 1
   scheduler: wrr
   fwmark: 1
   nodes:
@@ -85,7 +85,7 @@ EOF
         f.puts(<<-EOF)
 ---
 test1:
-  checkInterval: 1
+  check_interval: 1
   scheduler: wrr
   fwmark: 1
   nodes:
@@ -110,7 +110,7 @@ EOF
         f.puts(<<-EOF)
 ---
 test1:
-  checkInterval: 1
+  check_interval: 1
   scheduler: wrr
   fwmark: 1
   ramp_up_time: 0
@@ -132,7 +132,7 @@ EOF
         f.puts(<<-EOF)
 ---
 test1:
-  checkInterval: 1
+  check_interval: 1
   scheduler: wrr
   fwmark: 1
   nodes:
