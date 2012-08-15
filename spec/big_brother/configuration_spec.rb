@@ -3,7 +3,7 @@ require 'spec_helper'
 describe BigBrother::Configuration do
   describe '.evaluate' do
     it 'returns a hash of clusters' do
-      clusters = BigBrother::Configuration.evaluate(TEST_CONFIG)
+      clusters = BigBrother::Configuration.evaluate(TEST_CONFIG, {})
 
       clusters['test1'].check_interval.should == 1
       clusters['test1'].scheduler.should == 'wrr'
@@ -22,7 +22,7 @@ describe BigBrother::Configuration do
     end
 
     it 'populates a clusters nodes' do
-      clusters = BigBrother::Configuration.evaluate(TEST_CONFIG)
+      clusters = BigBrother::Configuration.evaluate(TEST_CONFIG, {})
 
       clusters['test1'].nodes.length.should == 2
 

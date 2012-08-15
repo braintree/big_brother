@@ -2,14 +2,14 @@ require 'net/http'
 
 module BigBrother
   class Node
-    attr_reader :address, :port, :path
+    attr_reader :address, :port, :path, :start_time
 
-    def initialize(address, port, path)
-      @address = address
-      @port = port
-      @path = path
-      @weight = nil
-      @start_time = Time.now.to_i
+    def initialize(attributes={})
+      @address = attributes[:address]
+      @port = attributes[:port]
+      @path = attributes[:path]
+      @weight = attributes[:weight]
+      @start_time = attributes.fetch(:start_time, Time.now.to_i)
     end
 
     def age

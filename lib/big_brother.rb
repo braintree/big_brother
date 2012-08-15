@@ -34,7 +34,7 @@ module BigBrother
 
   def self.configure(filename)
     @config_file = filename
-    @clusters = BigBrother::Configuration.evaluate(filename)
+    @clusters = BigBrother::Configuration.evaluate(filename, clusters)
   end
 
   def self.start_ticker!

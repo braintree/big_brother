@@ -1,9 +1,11 @@
 class Factory
   def self.node(overrides = {})
     BigBrother::Node.new(
-      overrides.fetch(:address, 'localhost'),
-      overrides.fetch(:port, 8081),
-      overrides.fetch(:path, '/test/status')
+      {
+        :address => 'localhost',
+        :port    => 8081,
+        :path    => '/test/status'
+      }.merge(overrides)
     )
   end
 end

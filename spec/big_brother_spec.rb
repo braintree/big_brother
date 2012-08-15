@@ -21,6 +21,7 @@ HTTP
       spec.run
       server.stop
     end
+
     it "reconfigures the clusters" do
       config_file = Tempfile.new('config.yml')
       File.open(config_file, 'w') do |f|
@@ -55,6 +56,49 @@ EOF
       end
       BigBrother.reconfigure
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
+    end
+
+    it "maintains the age of existing nodes after reconfiguring" do
+      Time.stub(:now).and_return(Time.at(1345043600))
+      config_file = Tempfile.new('config.yml')
+      File.open(config_file, 'w') do |f|
+        f.puts(<<-EOF)
+---
+test1:
+  checkInterval: 1
+  scheduler: wrr
+  fwmark: 1
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/valid
+EOF
+      end
+      BigBrother.configure(config_file)
+      BigBrother.start_ticker!
+
+      Time.stub(:now).and_return(Time.at(1345043700))
+      age = BigBrother.clusters['test1'].nodes.first.age
+
+      File.open(config_file, 'w') do |f|
+        f.puts(<<-EOF)
+---
+test1:
+  checkInterval: 1
+  scheduler: wrr
+  fwmark: 1
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/valid
+  - address: 127.0.0.2
+    port: 9001
+    path: /test/valid
+EOF
+      end
+      BigBrother.reconfigure
+      BigBrother.clusters['test1'].nodes[0].age.should == age
+      BigBrother.clusters['test1'].nodes[1].age.should == 0
     end
 
     it "stops the ticker and reconfigures after it has finished all its ticks" do
