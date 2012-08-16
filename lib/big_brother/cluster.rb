@@ -14,10 +14,15 @@ module BigBrother
       @up_file = BigBrother::StatusFile.new('up', @name)
       @down_file = BigBrother::StatusFile.new('down', @name)
       @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
+      @has_downpage = attributes[:has_downpage]
     end
 
     def downpage_enabled?
       @downpage_enabled
+    end
+
+    def has_downpage?
+      @has_downpage
     end
 
     def monitored?
@@ -69,7 +74,7 @@ module BigBrother
       @last_check = Time.now
       @nodes.each { |node| node.monitor(self) }
 
-      _check_downpage
+      _check_downpage if has_downpage?
     end
 
     def to_s

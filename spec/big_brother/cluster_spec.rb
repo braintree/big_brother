@@ -81,7 +81,7 @@ describe BigBrother::Cluster do
     it "enables a downpage if none of the nodes have health > 0" do
       node1 = Factory.node
       node2 = Factory.node
-      cluster = Factory.cluster(:nodes => [node1, node2])
+      cluster = Factory.cluster(:has_downpage => true, :nodes => [node1, node2])
 
       BigBrother::HealthFetcher.stub(:current_health).and_return(0)
 
@@ -90,10 +90,22 @@ describe BigBrother::Cluster do
       cluster.downpage_enabled?.should be_true
     end
 
+    it "does not enable a downpage if the cluster does not have a downpage enabled" do
+      node1 = Factory.node
+      node2 = Factory.node
+      cluster = Factory.cluster(:has_downpage => false, :nodes => [node1, node2])
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(0)
+
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+      cluster.downpage_enabled?.should be_false
+    end
+
     it "adds a downpage node to IPVS when down" do
       node1 = Factory.node
       node2 = Factory.node
-      cluster = Factory.cluster(:nodes => [node1, node2], :fwmark => 1)
+      cluster = Factory.cluster(:has_downpage => true, :nodes => [node1, node2], :fwmark => 1)
 
       BigBrother::HealthFetcher.stub(:current_health).and_return(0)
 
@@ -106,7 +118,7 @@ describe BigBrother::Cluster do
     it "removes downpage node from IPVS if it exists and cluster is up" do
       node1 = Factory.node
       node2 = Factory.node
-      cluster = Factory.cluster(:nodes => [node1, node2], :fwmark => 1)
+      cluster = Factory.cluster(:has_downpage => true, :nodes => [node1, node2], :fwmark => 1)
 
       BigBrother::HealthFetcher.stub(:current_health).and_return(0)
 
