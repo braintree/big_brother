@@ -13,6 +13,7 @@ require 'big_brother/configuration'
 require 'big_brother/health_fetcher'
 require 'big_brother/ipvs'
 require 'big_brother/logger'
+require 'big_brother/nagios'
 require 'big_brother/node'
 require 'big_brother/shell_executor'
 require 'big_brother/status_file'
@@ -25,10 +26,11 @@ require 'thin/callback_rack_handler'
 
 module BigBrother
   class << self
-    attr_accessor :ipvs, :clusters, :config_dir, :logger
+    attr_accessor :ipvs, :nagios, :clusters, :config_dir, :logger
   end
 
   self.ipvs = IPVS.new
+  self.nagios = Nagios.new
   self.clusters = {}
   self.logger = BigBrother::Logger.new
 

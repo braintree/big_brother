@@ -130,6 +130,71 @@ describe BigBrother::Cluster do
 
       @stub_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1"
     end
+
+    context "nagios" do
+      it "sends critical if at least half of all nodes are down" do
+        node1 = Factory.node(:address => '192.168.0.1')
+        node2 = Factory.node(:address => '192.168.0.2')
+        cluster = Factory.cluster(:nodes => [node1, node2], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
+
+        node1.stub(:_determine_weight).and_return(0)
+        node2.stub(:_determine_weight).and_return(10)
+
+        cluster.start_monitoring!
+        cluster.monitor_nodes
+        @stub_executor.commands.should include("echo 'prod.load,test1_check,2,CRITICAL 50% of nodes are down' | send_nsca -H server.foo -d ,")
+      end
+
+      it "does not resend a Nagios check if the state does not change" do
+        node1 = Factory.node(:address => '192.168.0.1')
+        node2 = Factory.node(:address => '192.168.0.2')
+        cluster = Factory.cluster(:nodes => [node1, node2], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
+
+        node1.stub(:_determine_weight).and_return(0)
+        node2.stub(:_determine_weight).and_return(10)
+
+        cluster.start_monitoring!
+        cluster.monitor_nodes
+        @stub_executor.clear_commands!
+
+        cluster.monitor_nodes
+        @stub_executor.commands.should_not include("echo 'prod.load,test1_check,2,CRITICAL 50% of nodes are down' | send_nsca -H server.foo -d ,")
+      end
+
+      it "sends info if at least half of one node is down" do
+        node1 = Factory.node(:address => '192.168.0.1')
+        node2 = Factory.node(:address => '192.168.0.2')
+        node3 = Factory.node(:address => '192.168.0.3')
+        cluster = Factory.cluster(:nodes => [node1, node2, node3], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
+
+        node1.stub(:_determine_weight).and_return(0)
+        node2.stub(:_determine_weight).and_return(10)
+        node3.stub(:_determine_weight).and_return(10)
+
+        cluster.start_monitoring!
+        cluster.monitor_nodes
+        @stub_executor.commands.should include("echo 'prod.load,test1_check,1,WARNING a node is down' | send_nsca -H server.foo -d ,")
+      end
+
+      it "sends ok if all nodes back up" do
+        node1 = Factory.node(:address => '192.168.0.1')
+        node2 = Factory.node(:address => '192.168.0.2')
+        cluster = Factory.cluster(:nodes => [node1, node2], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
+        node1.stub(:_determine_weight).and_return(0)
+        node2.stub(:_determine_weight).and_return(10)
+
+        cluster.start_monitoring!
+        cluster.monitor_nodes
+        @stub_executor.commands.should include("echo 'prod.load,test1_check,2,CRITICAL 50% of nodes are down' | send_nsca -H server.foo -d ,")
+        @stub_executor.clear_commands!
+
+        node1.stub(:_determine_weight).and_return(10)
+        node2.stub(:_determine_weight).and_return(10)
+        cluster.monitor_nodes
+        @stub_executor.commands.should include("echo 'prod.load,test1_check,0,OK all nodes up' | send_nsca -H server.foo -d ,")
+      end
+    end
+
   end
 
   describe "#resume_monitoring!" do

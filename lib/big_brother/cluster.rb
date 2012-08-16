@@ -1,6 +1,6 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :persistent, :ramp_up_time
+    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :persistent, :ramp_up_time, :nagios
 
     def initialize(name, attributes = {})
       @name = name
@@ -15,6 +15,7 @@ module BigBrother
       @down_file = BigBrother::StatusFile.new('down', @name)
       @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
       @has_downpage = attributes[:has_downpage]
+      @nagios = attributes[:nagios]
     end
 
     def downpage_enabled?
@@ -75,6 +76,7 @@ module BigBrother
       @nodes.each { |node| node.monitor(self) }
 
       _check_downpage if has_downpage?
+      _notify_nagios if nagios
     end
 
     def to_s
@@ -114,6 +116,19 @@ module BigBrother
         _remove_maintenance_node if downpage_enabled?
         @downpage_enabled = false
       end
+    end
+
+    def _notify_nagios
+      nodes_down = @nodes.count{|n| n.weight == 0}
+      return if @last_node_count == nodes_down
+      if ((nodes_down / @nodes.count.to_f) >= 0.5)
+        BigBrother.nagios.send_critical(nagios[:host], nagios[:check], "50% of nodes are down", nagios[:server])
+      elsif nodes_down > 0
+        BigBrother.nagios.send_warning(nagios[:host], nagios[:check], "a node is down", nagios[:server])
+      else
+        BigBrother.nagios.send_ok(nagios[:host], nagios[:check], "all nodes up", nagios[:server])
+      end
+      @last_node_count = nodes_down
     end
 
     def _remove_maintenance_node

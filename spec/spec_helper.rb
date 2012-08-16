@@ -15,6 +15,7 @@ RSpec.configure do |config|
     ipvs = BigBrother.ipvs
     @stub_executor = StubExecutor.new
     BigBrother.ipvs = BigBrother::IPVS.new(@stub_executor)
+    BigBrother.nagios = BigBrother::Nagios.new(@stub_executor)
     spec.run
     BigBrother.ipvs = ipvs
   end

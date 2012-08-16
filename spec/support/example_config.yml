@@ -6,6 +6,10 @@ test1:
   persistent: 20
   ramp_up_time: 120
   has_downpage: true
+  nagios:
+    server: nsca.host
+    check: test1_status
+    host: prod-load
   nodes:
   - address: 127.0.0.1
     port: 9001

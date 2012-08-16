@@ -11,6 +11,9 @@ describe BigBrother::Configuration do
       clusters['test1'].persistent.should == 20
       clusters['test1'].ramp_up_time.should == 120
       clusters['test1'].has_downpage?.should == true
+      clusters['test1'].nagios['check'].should == 'test1_status'
+      clusters['test1'].nagios['host'].should == 'prod-load'
+      clusters['test1'].nagios['server'].should == 'nsca.host'
 
       clusters['test2'].check_interval.should == 2
       clusters['test2'].scheduler.should == 'wrr'

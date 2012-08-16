@@ -15,4 +15,8 @@ class StubExecutor
     @responses[command] ||= []
     @responses[command].push [output, status]
   end
+
+  def clear_commands!
+    @commands = []
+  end
 end
