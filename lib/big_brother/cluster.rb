@@ -9,7 +9,7 @@ module BigBrother
       @persistent = attributes.fetch(:persistent, 300)
       @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
-      @nodes = attributes.fetch(:nodes, [])
+      @nodes = attributes.fetch(:nodes, []).map { |node_config| _coerce_node(node_config) }
       @last_check = Time.new(0)
       @up_file = BigBrother::StatusFile.new('up', @name)
       @down_file = BigBrother::StatusFile.new('down', @name)
@@ -18,8 +18,16 @@ module BigBrother
       @nagios = attributes[:nagios]
     end
 
+    def _coerce_node(node_config)
+      node_config.is_a?(Node) ? node_config : Node.new(node_config)
+    end
+
     def downpage_enabled?
       @downpage_enabled
+    end
+
+    def find_node(address, port)
+      nodes.find{|node| node.address == address && node.port == port}
     end
 
     def has_downpage?
@@ -93,6 +101,13 @@ module BigBrother
 
     def down_file_exists?
       @down_file.exists?
+    end
+
+    def incorporate_state(another_cluster)
+      nodes.each do |node|
+        node.incorporate_state(another_cluster.find_node(node.address, node.port))
+      end
+      self
     end
 
     def _add_nodes(addresses)

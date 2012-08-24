@@ -9,6 +9,7 @@ require 'sinatra/synchrony'
 
 require 'big_brother/app'
 require 'big_brother/cluster'
+require 'big_brother/cluster_collection'
 require 'big_brother/configuration'
 require 'big_brother/health_fetcher'
 require 'big_brother/ipvs'
@@ -31,12 +32,12 @@ module BigBrother
 
   self.ipvs = IPVS.new
   self.nagios = Nagios.new
-  self.clusters = {}
+  self.clusters = BigBrother::ClusterCollection.new
   self.logger = BigBrother::Logger.new
 
   def self.configure(filename)
     @config_file = filename
-    @clusters = BigBrother::Configuration.evaluate(filename, clusters)
+    @clusters.config(BigBrother::Configuration.from_file(filename))
   end
 
   def self.start_ticker!

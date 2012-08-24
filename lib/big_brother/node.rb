@@ -16,6 +16,13 @@ module BigBrother
       Time.now.to_i - @start_time
     end
 
+    def incorporate_state(another_node)
+      if another_node
+        @weight = another_node.weight
+        @start_time = another_node.start_time
+      end
+    end
+
     def invalidate_weight!
       @weight = nil
     end

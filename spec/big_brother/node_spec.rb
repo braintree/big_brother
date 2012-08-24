@@ -130,4 +130,18 @@ describe BigBrother::Node do
       node.age.should == 0
     end
   end
+
+  describe "incorporate_state" do
+    it "takes the weight and the start time from the other node, but leaves rest of config" do
+      original_start_time = Time.now
+      node_with_state = Factory.node(:path => '/old/path', :start_time => original_start_time, :weight => 65)
+      node_from_config = Factory.node(:path => '/new/path', :start_time => Time.now, :weight => 100)
+
+      node_from_config.incorporate_state(node_with_state)
+
+      node_from_config.path.should == '/new/path'
+      node_from_config.start_time.should == original_start_time
+      node_from_config.weight.should == 65
+    end
+  end
 end

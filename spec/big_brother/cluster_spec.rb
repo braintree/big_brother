@@ -294,4 +294,23 @@ describe BigBrother::Cluster do
       cluster.down_file_exists?.should be_true
     end
   end
+
+  describe "incorporate_state" do
+    it "finds any equivalent nodes from the provided cluster, incorporates their state, and returns self" do
+      original_node1 = Factory.node(:address => '127.0.0.1')
+      original_node2 = Factory.node(:address => '127.0.1.1')
+      original_cluster = Factory.cluster(:nodes => [original_node1, original_node2])
+
+      config_node1 = Factory.node(:address => '127.0.0.1')
+      config_node2 = Factory.node(:address => '127.0.1.1')
+      config_cluster = Factory.cluster(:nodes => [config_node1, config_node2])
+
+      config_node1.should_receive(:incorporate_state).with(original_node1)
+      config_node2.should_receive(:incorporate_state).with(original_node2)
+
+      retval = config_cluster.incorporate_state(original_cluster)
+
+      retval.should == config_cluster
+    end
+  end
 end

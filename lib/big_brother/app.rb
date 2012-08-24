@@ -5,15 +5,13 @@ module BigBrother
     set :raise_errors, false
 
     get "/" do
-      running, stopped = BigBrother.clusters.values.partition(&:monitored?)
-
       [200, <<-CONTENT]
 Big Brother: #{BigBrother::VERSION}
 
 Running:
-#{running.map { |cluster| "+ #{cluster}\n" }.join}
+#{BigBrother.clusters.running.map { |cluster| "+ #{cluster}\n" }.join}
 Stopped:
-#{stopped.map { |cluster| "- #{cluster}\n" }.join}
+#{BigBrother.clusters.stopped.map { |cluster| "- #{cluster}\n" }.join}
       CONTENT
     end
 

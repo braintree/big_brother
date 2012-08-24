@@ -1,7 +1,7 @@
 module BigBrother
   class StatusFile
     def initialize(*filenames)
-      @path = File.join(BigBrother.config_dir, *filenames)
+      @path = File.join(BigBrother.config_dir, *[filenames.map(&:to_s)])
     end
 
     def content

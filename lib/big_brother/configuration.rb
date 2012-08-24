@@ -1,33 +1,35 @@
 module BigBrother
   class Configuration
-    def self.evaluate(file, current_clusters)
-      yaml = YAML.load(File.read(file))
-      assoc_array = yaml.map do |name, values|
-        new_nodes = _parse_nodes(values.delete('nodes'), current_clusters[name])
-        [name, Cluster.new(name, _symbolize_keys(values).merge(:nodes => new_nodes))]
-      end
+    GLOBAL_CONFIG_KEY = '_big_brother'
 
-      Hash[assoc_array]
-    end
+    def self.from_file(config_file)
+      config = YAML.load_file(config_file)
+      defaults = config.delete(GLOBAL_CONFIG_KEY)
 
-    def self._parse_nodes(nodes, current_cluster)
-      nodes.map do |values|
-        old_node = _find_node_in_cluster(current_cluster, values['address'], values['port'])
-
-        node_attrs = _symbolize_keys(values)
-        node_attrs.merge!({:start_time => old_node.start_time, :weight => old_node.weight}) if old_node
-
-        Node.new(node_attrs)
+      config.inject({}) do |clusters, (cluster_name, cluster_values)|
+        cluster_details = _apply_defaults(defaults, cluster_values)
+        clusters.merge(cluster_name => Cluster.new(cluster_name, _deeply_symbolize_keys(cluster_details)))
       end
     end
 
-    def self._symbolize_keys(hash)
-      hash.inject({}) {|memo,(key, value)| memo[key.to_sym] = value; memo }
+    def self._deeply_symbolize_keys(value)
+      if value.is_a?(Hash)
+        value.inject({}) do |symbolized_hash, (hash_key, hash_value)|
+          symbolized_hash[hash_key.to_sym] = _deeply_symbolize_keys(hash_value)
+          symbolized_hash
+        end
+      elsif value.is_a?(Array)
+        value.map { |item| _deeply_symbolize_keys(item) }
+      else
+        value
+      end
     end
 
-    def self._find_node_in_cluster(cluster, address, port)
-      return nil if cluster.nil?
-      cluster.nodes.find{|node| node.address == address && node.port == port}
+    def self._apply_defaults(defaults_hash, settings_hash)
+      return settings_hash unless defaults_hash
+      defaults_hash.merge(settings_hash) do |key, oldval, newval|
+        oldval.is_a?(Hash) && newval.is_a?(Hash) ? _apply_defaults(oldval, newval) : newval
+      end
     end
   end
 end
