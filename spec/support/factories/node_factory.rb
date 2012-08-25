@@ -4,7 +4,8 @@ class Factory
       {
         :address => 'localhost',
         :port    => 8081,
-        :path    => '/test/status'
+        :path    => '/test/status',
+        :weight  => 100
       }.merge(overrides)
     )
   end

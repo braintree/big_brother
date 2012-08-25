@@ -22,6 +22,10 @@ module BigBrother
       node_config.is_a?(Node) ? node_config : Node.new(node_config)
     end
 
+    def combined_weight
+      nodes.inject(0) { |sum, node| sum + node.weight }
+    end
+
     def downpage_enabled?
       @downpage_enabled
     end

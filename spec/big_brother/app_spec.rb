@@ -10,7 +10,10 @@ module BigBrother
       it "returns the list of configured clusters and their status" do
         BigBrother.clusters['one'] = Factory.cluster(:name => 'one', :fwmark => 1)
         BigBrother.clusters['two'] = Factory.cluster(:name => 'two', :fwmark => 2)
-        BigBrother.clusters['three'] = Factory.cluster(:name => 'three', :fwmark => 3)
+        BigBrother.clusters['three'] = Factory.cluster(
+          :name => 'three', :fwmark => 3,
+          :nodes => [Factory.node(:weight => 99)]
+        )
         BigBrother.clusters['three'].start_monitoring!
         BigBrother.clusters['four'] = Factory.cluster(:name => 'four', :fwmark => 4)
 
@@ -19,7 +22,7 @@ module BigBrother
         last_response.body.should include("Big Brother: #{BigBrother::VERSION}")
         last_response.body.should include("- one (1)")
         last_response.body.should include("- two (2)")
-        last_response.body.should include("+ three (3)")
+        last_response.body.should include("+ three (3) - CombinedWeight: 99")
         last_response.body.should include("- four (4)")
       end
     end
@@ -31,17 +34,27 @@ module BigBrother
         get "/cluster/test"
 
         last_response.status.should == 200
-        last_response.body.should == "Running: false"
+        last_response.body.should =~ /^Running: false$/
       end
 
-      it "returns 'Running: true' when the cluster is running" do
-        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
+      it "returns 'Running: true' and the combined weight when the cluster is running" do
+        BigBrother.clusters['test'] = Factory.cluster(
+          :name => 'test',
+          :nodes => [
+            Factory.node(:weight => 10),
+            Factory.node(:weight => 20),
+            Factory.node(:weight => 30)
+          ]
+        )
 
         put "/cluster/test"
         get "/cluster/test"
 
         last_response.status.should == 200
-        last_response.body.should == "Running: true"
+        last_response.body.should == <<-RESPONSE_BODY
+Running: true
+CombinedWeight: 60
+        RESPONSE_BODY
       end
 
       it "attempts to synchronize the node if it is not running" do
@@ -51,14 +64,14 @@ module BigBrother
 -a -f 1 -r 10.0.1.224:80 -i -w 1
 -A -f 2 -s wrr
 -a -f 2 -r 10.0.1.225:80 -i -w 1
-      OUTPUT
+        OUTPUT
         BigBrother.configure(TEST_CONFIG)
         BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 1)
 
         get "/cluster/test"
 
         last_response.status.should == 200
-        last_response.body.should == "Running: true"
+        last_response.body.should =~ /^Running: true$/
       end
 
       it "returns a 404 http status when the cluster is not found" do

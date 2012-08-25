@@ -313,4 +313,15 @@ describe BigBrother::Cluster do
       retval.should == config_cluster
     end
   end
+
+  describe "combined_weight" do
+    it "sums the weights of all the nodes in the cluster" do
+      cluster =Factory.cluster(:name => 'test', :nodes => [
+        Factory.node(:weight => 11),
+        Factory.node(:weight => 22),
+        Factory.node(:weight => 33)
+      ])
+      cluster.combined_weight.should == 66
+    end
+  end
 end

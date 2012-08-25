@@ -38,7 +38,7 @@ describe BigBrother::Node do
 
     it "sets the weight to 100 for each node if an up file exists" do
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
-      node = Factory.node(:address => '127.0.0.1')
+      node = Factory.node(:address => '127.0.0.1', :weight => 10)
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
       @stub_executor.commands.clear

@@ -9,7 +9,7 @@ module BigBrother
 Big Brother: #{BigBrother::VERSION}
 
 Running:
-#{BigBrother.clusters.running.map { |cluster| "+ #{cluster}\n" }.join}
+#{BigBrother.clusters.running.map { |cluster| "+ #{cluster} - CombinedWeight: #{cluster.combined_weight}\n" }.join}
 Stopped:
 #{BigBrother.clusters.stopped.map { |cluster| "- #{cluster}\n" }.join}
       CONTENT
@@ -22,7 +22,7 @@ Stopped:
 
     get "/cluster/:name" do |name|
       @cluster.synchronize! unless @cluster.monitored?
-      [200, "Running: #{@cluster.monitored?}"]
+      [200, "Running: #{@cluster.monitored?}\nCombinedWeight: #{@cluster.combined_weight}\n"]
     end
 
     put "/cluster/:name" do |name|
