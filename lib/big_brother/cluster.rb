@@ -23,7 +23,7 @@ module BigBrother
     end
 
     def combined_weight
-      nodes.inject(0) { |sum, node| sum + node.weight.to_f }
+      nodes.inject(0) { |sum, node| sum + node.weight.to_i }
     end
 
     def downpage_enabled?
