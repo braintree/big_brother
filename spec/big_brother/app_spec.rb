@@ -81,6 +81,55 @@ CombinedWeight: 60
       end
     end
 
+    describe "GET /cluster/:name/status" do
+      it "returns 'Running: false' when the cluster isn't running" do
+        BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
+
+        get "/cluster/test/status"
+
+        last_response.status.should == 200
+        last_response.body.should =~ /^Running: false$/
+      end
+
+      it "returns 'Running: true' and the combined weight when the cluster is running" do
+        BigBrother.clusters['test'] = Factory.cluster(
+          :name => 'test',
+          :nodes => [
+            Factory.node(:weight => 10),
+            Factory.node(:weight => 20),
+            Factory.node(:weight => 30)
+          ]
+        )
+
+        put "/cluster/test"
+        get "/cluster/test/status"
+
+        last_response.status.should == 200
+        last_response.body.should == <<-RESPONSE_BODY
+Running: true
+CombinedWeight: 60
+        RESPONSE_BODY
+      end
+
+      it "does not synchronize the cluster, so litmus_paper can call this route often" do
+        cluster = Factory.cluster(:name => 'test')
+        BigBrother.clusters['test'] = cluster
+
+        cluster.should_receive(:synchronize!).never
+
+        get "/cluster/test/status"
+
+        last_response.status.should == 200
+        last_response.body.should =~ /^Running: false$/
+      end
+
+      it "returns a 404 http status when the cluster is not found" do
+        get "/cluster/not_found/status"
+
+        last_response.status.should == 404
+      end
+    end
+
     describe "PUT /cluster/:name" do
       it "marks the cluster as monitored" do
         BigBrother.clusters['test'] = Factory.cluster(:name => 'test')

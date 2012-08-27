@@ -15,13 +15,21 @@ Stopped:
       CONTENT
     end
 
-    before "/cluster/:name" do |name|
+    before %r{/cluster/([^/]+).*$} do |name|
       @cluster = BigBrother.clusters[name]
       halt 404, "Cluster #{name} not found" if @cluster.nil?
     end
 
+    get "/cluster/:name/status" do |name|
+      _cluster_status
+    end
+
     get "/cluster/:name" do |name|
       @cluster.synchronize! unless @cluster.monitored?
+      _cluster_status
+    end
+
+    def _cluster_status
       [200, "Running: #{@cluster.monitored?}\nCombinedWeight: #{@cluster.combined_weight}\n"]
     end
 
