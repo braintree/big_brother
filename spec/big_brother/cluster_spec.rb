@@ -323,5 +323,14 @@ describe BigBrother::Cluster do
       ])
       cluster.combined_weight.should == 66
     end
+
+    it "correctly interacts with nodes having nil weight as they might coming from a config that doesn't specify it" do
+      cluster =Factory.cluster(:name => 'test', :nodes => [
+        Factory.node(:weight => 11),
+        Factory.node(:weight => nil),
+        Factory.node(:weight => 33)
+      ])
+      cluster.combined_weight.should == 44
+    end
   end
 end
