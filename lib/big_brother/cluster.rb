@@ -1,12 +1,11 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :persistent, :ramp_up_time, :nagios
+    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios
 
     def initialize(name, attributes = {})
       @name = name
       @fwmark = attributes[:fwmark]
       @scheduler = attributes[:scheduler]
-      @persistent = attributes.fetch(:persistent, 300)
       @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
       @nodes = attributes.fetch(:nodes, []).map { |node_config| _coerce_node(node_config) }
@@ -44,7 +43,7 @@ module BigBrother
 
     def start_monitoring!
       BigBrother.logger.info "starting monitoring on cluster #{to_s}"
-      BigBrother.ipvs.start_cluster(@fwmark, @scheduler, @persistent)
+      BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       @nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, 100)
       end

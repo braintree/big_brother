@@ -13,7 +13,7 @@ describe BigBrother::Cluster do
       cluster = Factory.cluster(:fwmark => 100, :scheduler => 'wrr')
 
       cluster.start_monitoring!
-      @stub_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr --persistent 300')
+      @stub_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
     end
   end
 
