@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = BigBrother::VERSION
 
-  gem.add_dependency "thin",              "~> 1.3.1"
+  gem.add_dependency "thin",              "~> 1.4.0"
   gem.add_dependency "async-rack",        "~> 0.5.1"
   gem.add_dependency "sinatra",           "~> 1.0"
   gem.add_dependency "rack-fiber_pool",   "~> 0.9"
