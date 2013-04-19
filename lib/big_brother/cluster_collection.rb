@@ -10,6 +10,9 @@ module BigBrother
     end
 
     def config(new_clusters)
+      (@clusters.keys - new_clusters.keys).each do |removed_name|
+        @clusters.delete(removed_name).stop_monitoring!
+      end
       new_clusters.each do |cluster_name, cluster|
         if @clusters.key?(cluster_name)
           @clusters[cluster_name] = cluster.incorporate_state(@clusters[cluster_name])
