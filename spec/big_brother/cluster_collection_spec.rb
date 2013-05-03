@@ -27,6 +27,23 @@ describe BigBrother::ClusterCollection do
 
       collection.config({'existing_cluster' => cluster_from_config})
     end
+
+    it "stops and removes clusters not included in the next configuration" do
+      test2 = Factory.cluster(:name => 'test2', :fwmark => 102)
+      collection = BigBrother::ClusterCollection.new
+      collection.config({
+        'test1' => Factory.cluster(:name => 'test1', :fwmark => 101),
+        'test2' => test2,
+        'test3' => Factory.cluster(:name => 'test3', :fwmark => 103)
+      })
+
+      test2.should_receive(:stop_monitoring!)
+      collection.config({
+        'test1' => Factory.cluster(:name => 'test1', :fwmark => 101),
+        'test3' => Factory.cluster(:name => 'test3', :fwmark => 103)
+      })
+      collection['test2'].should be_nil
+    end
   end
 
   describe "running" do
