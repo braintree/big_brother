@@ -1,6 +1,7 @@
 module Thin
   class CallbackRackHandler
     def self.run(app, options)
+      options[:signals] = false
       server = ::Thin::Server.new(options[:Host] || '0.0.0.0',
                                   options[:Port] || 8080,
                                   app,
