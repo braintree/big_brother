@@ -1,6 +1,15 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios
+    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios, :backend_mode
+    ACTIVE_PASSIVE_CLUSTER = "active_passive"
+
+    def self.create_cluster(name, attributes)
+      if attributes[:backend_mode] == ACTIVE_PASSIVE_CLUSTER
+        BigBrother::ActivePassiveCluster.new(name, attributes)
+      else
+        self.new(name, attributes)
+      end
+    end
 
     def initialize(name, attributes = {})
       @name = name
@@ -15,6 +24,7 @@ module BigBrother
       @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
       @has_downpage = attributes[:has_downpage]
       @nagios = attributes[:nagios]
+      @backend_mode = attributes[:backend_mode]
     end
 
     def _coerce_node(node_config)
@@ -70,11 +80,13 @@ module BigBrother
         resume_monitoring!
 
         running_nodes = ipvs_state[fwmark.to_s]
-        cluster_nodes = nodes.map(&:address)
-
         _remove_nodes(running_nodes - cluster_nodes)
         _add_nodes(cluster_nodes - running_nodes)
       end
+    end
+
+    def cluster_nodes
+      nodes.map(&:address)
     end
 
     def needs_check?
@@ -84,7 +96,14 @@ module BigBrother
 
     def monitor_nodes
       @last_check = Time.now
-      @nodes.each { |node| node.monitor(self) }
+      return unless monitored?
+      @nodes.each do |node|
+        new_weight = node.monitor(self)
+        if new_weight != node.weight
+          BigBrother.ipvs.edit_node(fwmark, node.address, new_weight)
+          node.weight = new_weight
+        end
+      end
 
       _check_downpage if has_downpage?
       _notify_nagios if nagios

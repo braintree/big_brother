@@ -2,7 +2,8 @@ require 'net/http'
 
 module BigBrother
   class Node
-    attr_reader :address, :port, :path, :start_time, :weight
+    attr_reader :address, :port, :path, :start_time, :priority
+    attr_accessor :weight
 
     def initialize(attributes={})
       @address = attributes[:address]
@@ -10,6 +11,7 @@ module BigBrother
       @path = attributes[:path]
       @weight = attributes[:weight]
       @start_time = attributes.fetch(:start_time, Time.now.to_i)
+      @priority = attributes.fetch(:priority, 0)
     end
 
     def age
@@ -27,20 +29,22 @@ module BigBrother
       @weight = nil
     end
 
-    def monitor(cluster)
-      new_weight = _determine_weight(cluster)
-      return unless cluster.monitored?
-      if new_weight != @weight
-        BigBrother.ipvs.edit_node(cluster.fwmark, address, new_weight)
-        @weight = new_weight
-      end
-    end
-
     def ==(other)
       address == other.address && port == other.port
     end
 
-    def _determine_weight(cluster)
+    def <=>(other)
+      return 1 if self.weight.zero?
+      return -1 if other.weight.zero?
+      comparison = self.priority <=> other.priority
+      if comparison.zero?
+       self.address <=> other.address
+      else
+        comparison
+      end
+    end
+
+    def monitor(cluster)
       if cluster.up_file_exists?
         100
       elsif cluster.down_file_exists?

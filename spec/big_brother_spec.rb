@@ -1,6 +1,24 @@
 require 'spec_helper'
 
 describe BigBrother do
+  describe '.monitor_nodes' do
+    it "updates the weight for all the nodes in a cluster" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node1 = Factory.node(:address => '127.0.0.1', :weight => 90)
+      node2 = Factory.node(:address => '127.0.0.2', :weight => 30)
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node1, node2])
+      cluster.start_monitoring!
+      @stub_executor.commands.clear
+
+      cluster.monitor_nodes
+
+      cluster.nodes.map(&:weight).uniq.should == [56]
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56")
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 56")
+    end
+
+  end
+
   describe '.configure' do
     it "reads the configuration file" do
       BigBrother.configure(TEST_CONFIG)

@@ -1,6 +1,7 @@
 ---
 test1:
   check_interval: 1
+  backend_mode: "active_passive"
   scheduler: wrr
   fwmark: 1
   ramp_up_time: 120
@@ -13,9 +14,11 @@ test1:
   - address: 127.0.0.1
     port: 9001
     path: /test/valid
+    priority: 0
   - address: 127.0.0.1
     port: 9002
     path: /test/valid
+    priority: 1
 test2:
   check_interval: 2
   scheduler: wrr
