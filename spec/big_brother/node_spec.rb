@@ -56,6 +56,12 @@ describe BigBrother::Node do
   end
 
   describe "<=>" do
+    it "returns 1 when compared to a node with a nil weight" do
+      node1 = Factory.node(:address => "127.0.0.1", :port => "8000", :priority => 1, :weight => 0)
+      node2 = Factory.node(:address => "127.0.0.2", :port => "8000", :priority => 2, :weight => nil)
+      (node1 <=> node2).should == 1
+    end
+
     it "returns 1 for comparison of an unhealthy node to an healthy one" do
       node1 = Factory.node(:address => "127.0.0.1", :port => "8000", :priority => 1, :weight => 0)
       node2 = Factory.node(:address => "127.0.0.2", :port => "8000", :priority => 2, :weight => 90)

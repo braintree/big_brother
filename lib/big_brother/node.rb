@@ -34,8 +34,8 @@ module BigBrother
     end
 
     def <=>(other)
-      return 1 if self.weight.zero?
-      return -1 if other.weight.zero?
+      return 1 if self.weight.to_i.zero?
+      return -1 if other.weight.to_i.zero?
       comparison = self.priority <=> other.priority
       if comparison.zero?
        self.address <=> other.address

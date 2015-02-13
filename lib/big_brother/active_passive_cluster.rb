@@ -32,7 +32,7 @@ module BigBrother
       current_active_node = active_node
       proposed_active_node = @nodes.reject do |node|
         node.weight = node.monitor(self)
-        node.weight.zero?
+        node.weight.to_i.zero?
       end.sort.first
 
       _modify_active_node(current_active_node, proposed_active_node) if current_active_node != proposed_active_node
