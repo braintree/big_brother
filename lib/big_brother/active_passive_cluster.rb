@@ -11,7 +11,7 @@ module BigBrother
     end
 
     def active_node
-      @nodes.sort.first
+      @current_active_node ||= @nodes.sort.first
     end
 
     def synchronize!
@@ -29,13 +29,20 @@ module BigBrother
 
     def monitor_nodes
       @last_check = Time.now
-      current_active_node = active_node
+      @current_active_node = active_node
       proposed_active_node = @nodes.reject do |node|
         node.weight = node.monitor(self)
         node.weight.to_i.zero?
       end.sort.first
 
-      _modify_active_node(current_active_node, proposed_active_node) if current_active_node != proposed_active_node
+      if proposed_active_node.nil?
+        @current_active_node.weight = 0
+        _modify_active_node(@current_active_node, @current_active_node)
+      else
+        _modify_active_node(@current_active_node, proposed_active_node)
+        @current_active_node = proposed_active_node
+      end
+
       _check_downpage if has_downpage?
       _notify_nagios if nagios
     end

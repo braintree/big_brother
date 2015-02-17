@@ -19,6 +19,23 @@ describe BigBrother::ActivePassiveCluster do
   end
 
   describe "#monitor_nodes" do
+    it "update node weight changes in ipvs" do
+      node1 = Factory.node(:priority => 0, :address => "127.0.0.1", :weight => 90)
+      node3 = Factory.node(:priority => 2, :address => "127.0.0.3", :weight => 88)
+      node2 = Factory.node(:priority => 1, :address => "127.0.0.2", :weight => 87)
+      cluster = Factory.active_passive_cluster(:nodes => [node1, node2, node3], :fwmark => 1)
+      node1.stub(:monitor).and_return(93)
+      node2.stub(:monitor).and_return(92)
+      node3.stub(:monitor).and_return(90)
+
+      cluster.monitor_nodes
+
+      cluster.active_node
+      cluster.active_node.address.should == "127.0.0.1"
+      @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1 --ipip --weight 93")
+    end
+
     it "replaces the unhealthy least priority node with the next priority node" do
       node1 = Factory.node(:priority => 0, :address => "127.0.0.1", :weight => 90)
       node3 = Factory.node(:priority => 2, :address => "127.0.0.3", :weight => 88)
@@ -32,6 +49,23 @@ describe BigBrother::ActivePassiveCluster do
 
       cluster.active_node
       cluster.active_node.address.should == "127.0.0.2"
+    end
+
+    it "sets the weight of the current_active_node to 0 in ipvs if all nodes are down" do
+      node1 = Factory.node(:priority => 0, :address => "127.0.0.1", :weight => 90)
+      node3 = Factory.node(:priority => 2, :address => "127.0.0.3", :weight => 88)
+      node2 = Factory.node(:priority => 1, :address => "127.0.0.2", :weight => 87)
+      cluster = Factory.active_passive_cluster(:nodes => [node1, node2, node3], :fwmark => 1)
+      node1.stub(:monitor).and_return(0)
+      node2.stub(:monitor).and_return(0)
+      node3.stub(:monitor).and_return(0)
+
+      cluster.monitor_nodes
+
+      cluster.active_node
+      cluster.active_node.address.should == "127.0.0.1"
+      @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1 --ipip --weight 0")
     end
   end
 
