@@ -8,7 +8,7 @@ module BigBrother
 
       config.inject({}) do |clusters, (cluster_name, cluster_values)|
         cluster_details = _apply_defaults(defaults, cluster_values)
-        clusters.merge(cluster_name => Cluster.new(cluster_name, _deeply_symbolize_keys(cluster_details)))
+        clusters.merge(cluster_name => Cluster.create_cluster(cluster_name, _deeply_symbolize_keys(cluster_details)))
       end
     end
 

@@ -56,6 +56,47 @@ describe BigBrother::Cluster do
   end
 
   describe "#monitor_nodes" do
+    it "does not run multiple ipvsadm commands if the health does not change" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @stub_executor.commands.clear
+      cluster.monitor_nodes
+      cluster.monitor_nodes
+
+      @stub_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56"]
+    end
+
+    it "will run multiple ipvsadm commands if the health does change" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      @stub_executor.commands.clear
+
+      cluster.monitor_nodes
+      BigBrother::HealthFetcher.stub(:current_health).and_return(41)
+      cluster.monitor_nodes
+
+      @stub_executor.commands.should == [
+        "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56",
+        "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 41"
+      ]
+    end
+
+    it "does not update the weight if the cluster is no longer monitored" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.stop_monitoring!
+
+      @stub_executor.commands.clear
+      cluster.monitor_nodes
+
+      @stub_executor.commands.should == []
+    end
+
     it "marks the cluster as no longer requiring monitoring" do
       cluster = Factory.cluster
 
@@ -71,6 +112,7 @@ describe BigBrother::Cluster do
       node1 = Factory.node
       node2 = Factory.node
       cluster = Factory.cluster(:nodes => [node1, node2])
+      cluster.start_monitoring!
 
       node1.should_receive(:monitor).with(cluster)
       node2.should_receive(:monitor).with(cluster)
@@ -137,8 +179,8 @@ describe BigBrother::Cluster do
         node2 = Factory.node(:address => '192.168.0.2')
         cluster = Factory.cluster(:nodes => [node1, node2], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
 
-        node1.stub(:_determine_weight).and_return(0)
-        node2.stub(:_determine_weight).and_return(10)
+        node1.stub(:monitor).and_return(0)
+        node2.stub(:monitor).and_return(10)
 
         cluster.start_monitoring!
         cluster.monitor_nodes
@@ -150,8 +192,8 @@ describe BigBrother::Cluster do
         node2 = Factory.node(:address => '192.168.0.2')
         cluster = Factory.cluster(:nodes => [node1, node2], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
 
-        node1.stub(:_determine_weight).and_return(0)
-        node2.stub(:_determine_weight).and_return(10)
+        node1.stub(:monitor).and_return(0)
+        node2.stub(:monitor).and_return(10)
 
         cluster.start_monitoring!
         cluster.monitor_nodes
@@ -167,9 +209,9 @@ describe BigBrother::Cluster do
         node3 = Factory.node(:address => '192.168.0.3')
         cluster = Factory.cluster(:nodes => [node1, node2, node3], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
 
-        node1.stub(:_determine_weight).and_return(0)
-        node2.stub(:_determine_weight).and_return(10)
-        node3.stub(:_determine_weight).and_return(10)
+        node1.stub(:monitor).and_return(0)
+        node2.stub(:monitor).and_return(10)
+        node3.stub(:monitor).and_return(10)
 
         cluster.start_monitoring!
         cluster.monitor_nodes
@@ -180,16 +222,16 @@ describe BigBrother::Cluster do
         node1 = Factory.node(:address => '192.168.0.1')
         node2 = Factory.node(:address => '192.168.0.2')
         cluster = Factory.cluster(:nodes => [node1, node2], :nagios => {:host => "prod.load", :check => "test1_check", :server => "server.foo"})
-        node1.stub(:_determine_weight).and_return(0)
-        node2.stub(:_determine_weight).and_return(10)
+        node1.stub(:monitor).and_return(0)
+        node2.stub(:monitor).and_return(10)
 
         cluster.start_monitoring!
         cluster.monitor_nodes
         @stub_executor.commands.should include("echo 'prod.load,test1_check,2,CRITICAL 50% of nodes are down' | send_nsca -H server.foo -d ,")
         @stub_executor.clear_commands!
 
-        node1.stub(:_determine_weight).and_return(10)
-        node2.stub(:_determine_weight).and_return(10)
+        node1.stub(:monitor).and_return(10)
+        node2.stub(:monitor).and_return(10)
         cluster.monitor_nodes
         @stub_executor.commands.should include("echo 'prod.load,test1_check,0,OK all nodes up' | send_nsca -H server.foo -d ,")
       end
@@ -208,7 +250,7 @@ describe BigBrother::Cluster do
   end
 
   describe "synchronize!" do
-    it "monitors clusters that were already monitored" do
+    it "continues to monitor clusters that were already monitored" do
       BigBrother.ipvs.stub(:running_configuration).and_return('1' => ['127.0.0.1'])
       cluster = Factory.cluster(:fwmark => 1)
 

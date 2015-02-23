@@ -1,6 +1,6 @@
 class Factory
   def self.cluster(overrides = {})
-    BigBrother::Cluster.new(
+    BigBrother::Cluster.create_cluster(
       overrides.fetch(:name, 'test'),
       {
         :fwmark         => 100,
@@ -10,5 +10,9 @@ class Factory
         :ramp_up_time   => 0
       }.merge(overrides)
     )
+  end
+
+  def self.active_passive_cluster(overrides = {})
+    self.cluster(overrides.merge(:backend_mode => BigBrother::Cluster::ACTIVE_PASSIVE_CLUSTER))
   end
 end
