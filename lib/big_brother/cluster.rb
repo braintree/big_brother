@@ -1,15 +1,6 @@
 module BigBrother
   class Cluster
     attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios, :backend_mode
-    ACTIVE_PASSIVE_CLUSTER = "active_passive"
-
-    def self.create_cluster(name, attributes)
-      if attributes[:backend_mode] == ACTIVE_PASSIVE_CLUSTER
-        BigBrother::ActivePassiveCluster.new(name, attributes)
-      else
-        self.new(name, attributes)
-      end
-    end
 
     def initialize(name, attributes = {})
       @name = name
