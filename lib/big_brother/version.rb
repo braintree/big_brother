@@ -1,3 +1,3 @@
 module BigBrother
-  VERSION = "0.6.9"
+  VERSION = "0.8.0"
 end
