@@ -3,7 +3,7 @@ require 'net/http'
 module BigBrother
   class Node
     attr_reader :address, :port, :path, :start_time, :priority
-    attr_accessor :weight
+    attr_accessor :weight, :down_tick_count
 
     def initialize(attributes={})
       @address = attributes[:address]
@@ -12,6 +12,8 @@ module BigBrother
       @weight = attributes[:weight]
       @start_time = attributes.fetch(:start_time, Time.now.to_i)
       @priority = attributes.fetch(:priority, 0)
+      @interpol = attributes.fetch(:interpol, false)
+      @down_tick_count = 0
     end
 
     def age
@@ -29,8 +31,17 @@ module BigBrother
       @weight = nil
     end
 
+    def interpol?
+      @interpol
+    end
+
     def ==(other)
       address == other.address && port == other.port
+    end
+    alias eql? ==
+
+    def hash
+      [@address, @port].hash
     end
 
     def <=>(other)

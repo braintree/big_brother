@@ -13,5 +13,11 @@ describe BigBrother::ClusterFactory do
 
       cluster.should be_an_instance_of BigBrother::ActivePassiveCluster
     end
+
+    it 'creates an active_active cluster' do
+      cluster = BigBrother::ClusterFactory.create_cluster('foo', :fwmark => 100, :backend_mode => 'active_active')
+
+      cluster.should be_an_instance_of BigBrother::ActiveActiveCluster
+    end
   end
 end

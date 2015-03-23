@@ -22,6 +22,8 @@ describe BigBrother::Configuration do
       clusters['test3'].check_interval.should == 1
       clusters['test3'].scheduler.should == 'wrr'
       clusters['test3'].fwmark.should == 3
+
+      clusters['test4'].backend_mode.should == 'active_active'
     end
 
     it 'populates a clusters nodes' do
@@ -29,13 +31,15 @@ describe BigBrother::Configuration do
 
       clusters['test1'].nodes.length.should == 2
 
-      clusters['test1'].nodes[0].address == '127.0.0.1'
-      clusters['test1'].nodes[0].port == '9001'
-      clusters['test1'].nodes[0].path == '/test/valid'
+      clusters['test1'].nodes[0].address.should == '127.0.0.1'
+      clusters['test1'].nodes[0].port.should == 9001
+      clusters['test1'].nodes[0].path.should == '/test/valid'
 
-      clusters['test1'].nodes[1].address == '127.0.0.1'
-      clusters['test1'].nodes[1].port == '9002'
-      clusters['test1'].nodes[1].path == '/test/valid'
+      clusters['test1'].nodes[1].address.should == '127.0.0.1'
+      clusters['test1'].nodes[1].port.should == 9002
+      clusters['test1'].nodes[1].path.should == '/test/valid'
+
+      clusters['test4'].nodes[1].should be_interpol
     end
 
     it 'allows a default cluster configuration under the global config key' do

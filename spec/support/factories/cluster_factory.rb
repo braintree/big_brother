@@ -15,4 +15,8 @@ class Factory
   def self.active_passive_cluster(overrides = {})
     self.cluster(overrides.merge(:backend_mode => BigBrother::ClusterFactory::ACTIVE_PASSIVE_CLUSTER))
   end
+
+  def self.active_active_cluster(overrides = {})
+    self.cluster(overrides.merge(:backend_mode => BigBrother::ClusterFactory::ACTIVE_ACTIVE_CLUSTER))
+  end
 end

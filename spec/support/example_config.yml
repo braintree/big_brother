@@ -41,3 +41,15 @@ test3:
   - address: 127.0.0.1
     port: 9002
     path: /test/invalid
+test4:
+  check_interval: 1
+  scheduler: wrr
+  fwmark: 4
+  backend_mode: 'active_active'
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/valid
+  - address: 196.168.0.2
+    port: 9292
+    interpol: true
