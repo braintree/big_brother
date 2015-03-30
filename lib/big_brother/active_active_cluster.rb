@@ -1,10 +1,11 @@
 module BigBrother
   class ActiveActiveCluster < BigBrother::Cluster
-    attr_reader :interpol_node, :remote_nodes, :max_down_ticks
+    attr_reader :interpol_node, :remote_nodes, :max_down_ticks, :offset
 
     def initialize(name, attributes={})
       super(name, attributes)
       @max_down_ticks = attributes.fetch(:max_down_ticks, 0)
+      @offset = attributes.fetch(:offset, 10_000)
     end
 
     def start_monitoring!
@@ -15,6 +16,7 @@ module BigBrother
 
       local_nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, 100)
+        BigBrother.ipvs.start_node(_relay_fwmark, node.address, 100)
       end
 
       @interpol_node = interpol_nodes.first
@@ -40,8 +42,25 @@ module BigBrother
       _add_remote_nodes(fresh_remote_nodes.values - remote_nodes)
     end
 
+    def synchronize!
+      @remote_nodes ||= []
+      super
+    end
+
     def cluster_nodes
       (nodes + remote_nodes).map(&:address)
+    end
+
+    def _relay_fwmark
+      fwmark + offset
+    end
+
+    def _add_nodes(addresses)
+      addresses.each do |address|
+        BigBrother.logger.info "adding #{address} to cluster #{self}"
+        BigBrother.ipvs.start_node(fwmark, address, 100)
+        BigBrother.ipvs.start_node(_relay_fwmark, address, 100)
+      end
     end
 
     def _adjust_remove_node(node)
@@ -72,6 +91,19 @@ module BigBrother
         BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
         @remote_nodes << node
       end
+    end
+
+    def _remove_nodes(addresses)
+      addresses.each do |address|
+        BigBrother.logger.info "removing #{address} to cluster #{self}"
+        BigBrother.ipvs.stop_node(fwmark, address)
+        BigBrother.ipvs.stop_node(_relay_fwmark, address)
+      end
+    end
+
+    def _update_node(node, new_weight)
+      BigBrother.ipvs.edit_node(fwmark, node.address, new_weight)
+      BigBrother.ipvs.edit_node(_relay_fwmark, node.address, new_weight)
     end
   end
 end
