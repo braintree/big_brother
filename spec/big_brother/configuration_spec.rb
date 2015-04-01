@@ -17,7 +17,7 @@ describe BigBrother::Configuration do
       clusters['test2'].check_interval.should == 2
       clusters['test2'].scheduler.should == 'wrr'
       clusters['test2'].fwmark.should == 2
-      clusters['test2'].offset.should == 10_000
+      clusters['test2'].offset.should == 10000
       clusters['test2'].max_down_ticks.should == 100
       clusters['test2'].ramp_up_time.should == 60
 

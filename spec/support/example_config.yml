@@ -1,6 +1,6 @@
 ---
 _big_brother:
-  offset: 10_000
+  offset: 10000
 test1:
   check_interval: 1
   backend_mode: "active_passive"
@@ -26,7 +26,6 @@ test2:
   backend_mode: "active_active"
   scheduler: wrr
   fwmark: 2
-  offset: 10_000
   max_down_ticks: 100
   nodes:
   - address: 127.0.0.1
