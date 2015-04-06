@@ -1,6 +1,6 @@
 module BigBrother
   class ActiveActiveCluster < BigBrother::Cluster
-    attr_reader :interpol_node, :max_down_ticks, :offset
+    attr_reader :interpol_node, :max_down_ticks, :offset, :remote_nodes, :local_nodes
 
     def initialize(name, attributes={})
       super(name, attributes)
@@ -16,7 +16,7 @@ module BigBrother
       BigBrother.logger.info "starting monitoring on cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
-      @local_nodes.each do |node|
+      local_nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, 100)
         BigBrother.ipvs.start_node(_relay_fwmark, node.address, 100)
       end
@@ -34,7 +34,7 @@ module BigBrother
       super
 
       fresh_remote_nodes = _fetch_remote_nodes
-      @remote_nodes.each do |node|
+      remote_nodes.each do |node|
         if new_node = fresh_remote_nodes[node.address]
           next if new_node.weight == node.weight
           BigBrother.ipvs.edit_node(fwmark, node.address, new_node.weight)
@@ -44,7 +44,7 @@ module BigBrother
         end
       end
 
-      _add_remote_nodes(fresh_remote_nodes.values - @remote_nodes)
+      _add_remote_nodes(fresh_remote_nodes.values - remote_nodes)
     end
 
     def synchronize!
@@ -60,7 +60,7 @@ module BigBrother
     end
 
     def cluster_nodes
-      (nodes + @remote_nodes).map(&:address)
+      (nodes + remote_nodes).map(&:address)
     end
 
     def local_cluster_nodes
@@ -81,7 +81,7 @@ module BigBrother
     def _adjust_or_remove_remote_node(node)
       if node.down_tick_count >= max_down_ticks
         BigBrother.ipvs.stop_node(fwmark, node.address)
-        @remote_nodes.delete(node)
+        remote_nodes.delete(node)
       else
         BigBrother.ipvs.edit_node(fwmark, node.address, 0)
         node.weight = 0
@@ -97,7 +97,7 @@ module BigBrother
 
     def _monitor_remote_nodes
       @remote_nodes = _fetch_remote_nodes.values
-      @remote_nodes.each do |node|
+      remote_nodes.each do |node|
         BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
       end
     end
