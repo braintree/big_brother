@@ -131,8 +131,8 @@ module BigBrother
     end
 
     def _add_maintenance_node
-      BigBrother.logger.info "adding 127.0.0.1 to cluster #{self}"
-      BigBrother.ipvs.start_node(fwmark, '127.0.0.1', 1)
+      BigBrother.logger.info "adding 169.254.254.254 to cluster #{self}"
+      BigBrother.ipvs.start_node(fwmark, '169.254.254.254', 1)
     end
 
     def _check_downpage

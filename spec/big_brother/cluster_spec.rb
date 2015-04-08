@@ -154,7 +154,7 @@ describe BigBrother::Cluster do
       cluster.start_monitoring!
       cluster.monitor_nodes
 
-      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1 --ipip --weight 1"
+      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 1 --real-server 169.254.254.254 --ipip --weight 1"
     end
 
     it "removes downpage node from IPVS if it exists and cluster is up" do
