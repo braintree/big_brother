@@ -31,20 +31,27 @@ module BigBrother
       @last_check = Time.now
       @current_active_node = active_node
       proposed_active_node = @nodes.reject do |node|
-        node.weight = node.monitor(self)
-        node.weight.to_i.zero?
+        weight = node.monitor(self).to_i
+        _modify_current_active_node_weight(node, weight)
+        node.weight = weight
+        node.weight.zero?
       end.sort.first
 
-      if proposed_active_node.nil?
-        @current_active_node.weight = 0
-        _modify_active_node(@current_active_node, @current_active_node)
-      else
+      if proposed_active_node != @current_active_node && !proposed_active_node.nil?
         _modify_active_node(@current_active_node, proposed_active_node)
         @current_active_node = proposed_active_node
       end
 
       _check_downpage if has_downpage?
       _notify_nagios if nagios
+    end
+
+    def _modify_current_active_node_weight(node, weight)
+      return unless node == @current_active_node
+      if @current_active_node.weight != weight
+        BigBrother.ipvs.edit_node(fwmark, @current_active_node.address, weight)
+        @current_active_node.weight = weight
+      end
     end
 
     def _modify_active_node(current_active_node, proposed_active_node)
