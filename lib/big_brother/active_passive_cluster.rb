@@ -4,7 +4,7 @@ module BigBrother
     def start_monitoring!
       BigBrother.logger.info "starting monitoring on cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
-      BigBrother.ipvs.start_node(@fwmark, active_node.address, 100)
+      BigBrother.ipvs.start_node(@fwmark, active_node.address, 0)
 
       @monitored = true
     end

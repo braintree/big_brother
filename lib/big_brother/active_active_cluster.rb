@@ -17,8 +17,8 @@ module BigBrother
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       local_nodes.each do |node|
-        BigBrother.ipvs.start_node(@fwmark, node.address, 100)
-        BigBrother.ipvs.start_node(_relay_fwmark, node.address, 100)
+        BigBrother.ipvs.start_node(@fwmark, node.address, 0)
+        BigBrother.ipvs.start_node(_relay_fwmark, node.address, 0)
       end
 
       _monitor_remote_nodes
@@ -74,7 +74,7 @@ module BigBrother
     def _add_nodes(addresses, fwmark)
       addresses.each do |address|
         BigBrother.logger.info "adding #{address} to cluster #{self}"
-        BigBrother.ipvs.start_node(fwmark, address, 100)
+        BigBrother.ipvs.start_node(fwmark, address, 0)
       end
     end
 

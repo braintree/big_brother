@@ -13,8 +13,8 @@ describe BigBrother::ActivePassiveCluster do
       )
 
       cluster.start_monitoring!
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 0')
     end
   end
 
@@ -112,15 +112,15 @@ describe BigBrother::ActivePassiveCluster do
       cluster = Factory.active_passive_cluster(
         :fwmark => 1,
         :nodes => [
-          Factory.node(:address => '127.0.1.1', :priority => 8),
-          Factory.node(:address => '127.0.0.1', :priority => 3),
+          Factory.node(:address => '127.0.1.1', :priority => 8, :weight => 55),
+          Factory.node(:address => '127.0.0.1', :priority => 3, :weight => 75),
         ],
       )
 
       cluster.synchronize!
 
       @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1")
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1 --ipip --weight 100")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1 --ipip --weight 75")
     end
 
     it "removes current active node if the node no longer exist" do
@@ -128,15 +128,15 @@ describe BigBrother::ActivePassiveCluster do
       cluster = Factory.active_passive_cluster(
         :fwmark => 1,
         :nodes => [
-          Factory.node(:address => '127.0.1.2', :priority => 2),
-          Factory.node(:address => '127.0.0.1', :priority => 3),
+          Factory.node(:address => '127.0.1.2', :priority => 2, :weight => 45),
+          Factory.node(:address => '127.0.0.1', :priority => 3, :weight => 55),
         ],
       )
 
       cluster.synchronize!
 
       @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1")
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.2 --ipip --weight 100")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.2 --ipip --weight 45")
     end
 
     it "does not remove current active node if it has the least priority" do

@@ -15,9 +15,9 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.start_monitoring!
 
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100')
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 100')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 0')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 0')
     end
 
     it 'starts all relay fwmark service' do
@@ -49,9 +49,9 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.start_monitoring!
 
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 100')
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 100')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 100')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 0')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 0')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 0')
     end
 
     it 'starts all interpol nodes' do
@@ -300,8 +300,8 @@ describe BigBrother::ActiveActiveCluster do
 
       cluster.synchronize!
 
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.1.1 --ipip --weight 100")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 0")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.1.1 --ipip --weight 0")
     end
 
     it "does not add remote nodes to relay ipvs fwmark" do
@@ -312,7 +312,7 @@ describe BigBrother::ActiveActiveCluster do
       cluster.start_monitoring!
       cluster.synchronize!
 
-      @stub_executor.commands.should_not include("ipvsadm --add-server --fwmark-service 10001 --real-server 172.27.3.1 --ipip --weight 100")
+      @stub_executor.commands.should_not include("ipvsadm --add-server --fwmark-service 10001 --real-server 172.27.3.1 --ipip --weight 0")
     end
   end
 

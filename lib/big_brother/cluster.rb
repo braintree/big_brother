@@ -46,7 +46,7 @@ module BigBrother
       BigBrother.logger.info "starting monitoring on cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       @nodes.each do |node|
-        BigBrother.ipvs.start_node(@fwmark, node.address, 100)
+        BigBrother.ipvs.start_node(@fwmark, node.address, 0)
       end
 
       @monitored = true
@@ -126,7 +126,7 @@ module BigBrother
     def _add_nodes(addresses)
       addresses.each do |address|
         BigBrother.logger.info "adding #{address} to cluster #{self}"
-        BigBrother.ipvs.start_node(fwmark, address, 100)
+        BigBrother.ipvs.start_node(fwmark, address, 0)
       end
     end
 

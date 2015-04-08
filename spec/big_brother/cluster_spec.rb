@@ -292,7 +292,7 @@ describe BigBrother::Cluster do
 
       cluster.synchronize!
 
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 0")
     end
   end
 

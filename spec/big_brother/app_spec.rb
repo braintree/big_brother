@@ -169,8 +169,8 @@ CombinedWeight: 60
         last_response.body.should == "OK"
         BigBrother.clusters['test'].should be_monitored
         @stub_executor.commands.should include("ipvsadm --add-service --fwmark-service 100 --scheduler wrr")
-        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 100")
-        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 100")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 0")
       end
 
       it "attempts to synchronize the nodes in the cluster" do
@@ -191,7 +191,7 @@ CombinedWeight: 60
         last_response.status.should == 304
         last_response.body.should == ""
         BigBrother.clusters['test'].should be_monitored
-        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.1.225 --ipip --weight 100")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.1.225 --ipip --weight 0")
         @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 100 --real-server 127.0.1.224")
       end
     end
