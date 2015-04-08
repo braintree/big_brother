@@ -22,7 +22,7 @@ describe BigBrother do
   describe '.configure' do
     it "reads the configuration file" do
       BigBrother.configure(TEST_CONFIG)
-      BigBrother.clusters.size.should == 3
+      BigBrother.clusters.size.should == 4
     end
   end
 

@@ -1,15 +1,6 @@
 module BigBrother
   class Cluster
     attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios, :backend_mode
-    ACTIVE_PASSIVE_CLUSTER = "active_passive"
-
-    def self.create_cluster(name, attributes)
-      if attributes[:backend_mode] == ACTIVE_PASSIVE_CLUSTER
-        BigBrother::ActivePassiveCluster.new(name, attributes)
-      else
-        self.new(name, attributes)
-      end
-    end
 
     def initialize(name, attributes = {})
       @name = name
@@ -100,7 +91,7 @@ module BigBrother
       @nodes.each do |node|
         new_weight = node.monitor(self)
         if new_weight != node.weight
-          BigBrother.ipvs.edit_node(fwmark, node.address, new_weight)
+          _update_node(node, new_weight)
           node.weight = new_weight
         end
       end
@@ -177,6 +168,10 @@ module BigBrother
         BigBrother.logger.info "removing #{address} to cluster #{self}"
         BigBrother.ipvs.stop_node(fwmark, address)
       end
+    end
+
+    def _update_node(node, new_weight)
+      BigBrother.ipvs.edit_node(fwmark, node.address, new_weight)
     end
   end
 end

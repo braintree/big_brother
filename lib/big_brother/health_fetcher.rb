@@ -1,3 +1,5 @@
+require 'json'
+
 module BigBrother
   class HealthFetcher
     def self.current_health(address, port, path)
@@ -6,6 +8,16 @@ module BigBrother
       BigBrother.logger.debug("Fetching health from #{url}")
       response = EventMachine::HttpRequest.new(url).get
       response.response_header.status == 200 ? _parse_health(response) : 0
+    end
+
+    def self.interpol_status(interpol_node, fwmark)
+      url = "http://#{interpol_node.address}:#{interpol_node.port}/#{fwmark}/status"
+
+      BigBrother.logger.debug("Fetching health from #{url}")
+      response = EventMachine::HttpRequest.new(url).get
+      response.response_header.status == 200 ? JSON.parse(response.response) : []
+    rescue JSON::ParserError
+      []
     end
 
     def self._parse_health(response)

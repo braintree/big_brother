@@ -1,6 +1,5 @@
 module BigBrother
   class ActivePassiveCluster < Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios, :backend_mode
 
     def start_monitoring!
       BigBrother.logger.info "starting monitoring on cluster #{to_s}"

@@ -1,4 +1,6 @@
 ---
+_big_brother:
+  offset: 10000
 test1:
   check_interval: 1
   backend_mode: "active_passive"
@@ -21,8 +23,10 @@ test1:
     priority: 1
 test2:
   check_interval: 2
+  backend_mode: "active_active"
   scheduler: wrr
   fwmark: 2
+  max_down_ticks: 100
   nodes:
   - address: 127.0.0.1
     port: 9001
@@ -41,3 +45,15 @@ test3:
   - address: 127.0.0.1
     port: 9002
     path: /test/invalid
+test4:
+  check_interval: 1
+  scheduler: wrr
+  fwmark: 4
+  backend_mode: 'active_active'
+  nodes:
+  - address: 127.0.0.1
+    port: 9001
+    path: /test/valid
+  - address: 196.168.0.2
+    port: 9292
+    interpol: true
