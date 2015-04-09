@@ -3,6 +3,7 @@ require 'spec_helper'
 describe BigBrother::ActivePassiveCluster do
   describe "#start_monitoring!" do
     it "starts only the node with the least priority in IPVS" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(10)
       cluster = Factory.active_passive_cluster(
         :fwmark => 100,
         :scheduler => 'wrr',
@@ -13,8 +14,24 @@ describe BigBrother::ActivePassiveCluster do
       )
 
       cluster.start_monitoring!
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 0')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 10')
+    end
+
+    it "monitors a node before adding it to ipvs" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(10)
+      cluster = Factory.active_passive_cluster(
+        :fwmark => 100,
+        :scheduler => 'wrr',
+        :nodes => [
+          Factory.node(:priority => 0, :address => "127.0.0.1"),
+          Factory.node(:priority => 1, :address => "127.0.0.2"),
+        ],
+      )
+
+      cluster.start_monitoring!
+      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10"
+      cluster.active_node.weight.should == 10
     end
   end
 

@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe BigBrother::Cluster do
+  before { BigBrother::HealthFetcher.stub(:current_health).and_return(10) }
+
   describe "#start_monitoring!" do
     it "marks the cluster as monitored" do
       cluster = Factory.cluster
@@ -14,6 +16,16 @@ describe BigBrother::Cluster do
 
       cluster.start_monitoring!
       @stub_executor.commands.should include('ipvsadm --add-service --fwmark-service 100 --scheduler wrr')
+    end
+
+    it "monitors a node before adding it to ipvs" do
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :scheduler => 'wrr', :nodes => [node])
+      BigBrother::HealthFetcher.stub(:current_health).and_return(10)
+
+      cluster.start_monitoring!
+      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10"
+      node.weight.should == 10
     end
   end
 
@@ -32,17 +44,16 @@ describe BigBrother::Cluster do
     it "invalidates recorded weights, so it properly updates after a stop/start" do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => '100', :nodes => [node])
-
-      BigBrother::HealthFetcher.stub(:current_health).and_return(10)
-
       cluster.start_monitoring!
       cluster.monitor_nodes
 
       cluster.stop_monitoring!
       cluster.start_monitoring!
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(15)
       cluster.monitor_nodes
 
-      @stub_executor.commands.last.should == "ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10"
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 15")
     end
   end
 
@@ -57,24 +68,23 @@ describe BigBrother::Cluster do
 
   describe "#monitor_nodes" do
     it "does not run multiple ipvsadm commands if the health does not change" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
       @stub_executor.commands.clear
-      cluster.monitor_nodes
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
 
       @stub_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 56"]
     end
 
     it "will run multiple ipvsadm commands if the health does change" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:current_health).and_return(41)
       cluster.monitor_nodes

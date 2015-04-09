@@ -23,9 +23,10 @@ describe BigBrother::Ticker do
             Factory.node(:address  => public_ip_address, :port => 8082)
           ]
         )
-        BigBrother.clusters['test'].start_monitoring!
+        BigBrother.clusters['test'].instance_variable_set(:@monitored, true)
         @stub_executor.commands.clear
 
+        BigBrother::Ticker.instance_variable_set(:@outstanding_ticks, 0)
         BigBrother::Ticker.tick
 
         @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74")
@@ -37,9 +38,10 @@ describe BigBrother::Ticker do
           :fwmark => 100,
           :nodes => [Factory.node(:address  => '127.0.0.1', :port => 8081)]
         )
-        BigBrother.clusters['test'].start_monitoring!
+        BigBrother.clusters['test'].instance_variable_set(:@monitored, true)
         @stub_executor.commands.clear
 
+        BigBrother::Ticker.instance_variable_set(:@outstanding_ticks, 0)
         BigBrother::Ticker.tick
         BigBrother::Ticker.tick
 
@@ -48,12 +50,14 @@ describe BigBrother::Ticker do
     end
 
     it "monitors clusters requiring monitoring" do
+      BigBrother::HealthFetcher.stub(:current_health)
       BigBrother.clusters['one'] = Factory.cluster
       BigBrother.clusters['two'] = Factory.cluster
       BigBrother.clusters['two'].start_monitoring!
 
       BigBrother.clusters['two'].should_receive(:monitor_nodes)
 
+      BigBrother::Ticker.instance_variable_set(:@outstanding_ticks, 0)
       BigBrother::Ticker.tick
     end
   end

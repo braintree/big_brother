@@ -48,6 +48,7 @@ describe BigBrother::ClusterCollection do
 
   describe "running" do
     it "returns the clusters in the collection that are currently running" do
+      BigBrother::HealthFetcher.stub(:current_health)
       clusters_from_config = {
         'test1' => Factory.cluster(:name => 'test1', :fwmark => 101),
         'test2' => Factory.cluster(:name => 'test2', :fwmark => 102),
@@ -65,6 +66,7 @@ describe BigBrother::ClusterCollection do
 
   describe "stopped" do
     it "returns the clusters in the collection that are not running" do
+      BigBrother::HealthFetcher.stub(:current_health)
       clusters_from_config = {
         'test1' => Factory.cluster(:name => 'test1', :fwmark => 101),
         'test2' => Factory.cluster(:name => 'test2', :fwmark => 102),

@@ -8,6 +8,7 @@ module BigBrother
 
     describe "/" do
       it "returns the list of configured clusters and their status" do
+        BigBrother::HealthFetcher.stub(:current_health).and_return(99)
         BigBrother.clusters['one'] = Factory.cluster(:name => 'one', :fwmark => 1)
         BigBrother.clusters['two'] = Factory.cluster(:name => 'two', :fwmark => 2)
         BigBrother.clusters['three'] = Factory.cluster(
@@ -41,9 +42,9 @@ module BigBrother
         BigBrother.clusters['test'] = Factory.cluster(
           :name => 'test',
           :nodes => [
-            Factory.node(:weight => 10),
-            Factory.node(:weight => 20),
-            Factory.node(:weight => 30)
+            Factory.node.tap { |x| x.stub(:monitor).and_return(10) },
+            Factory.node.tap { |x| x.stub(:monitor).and_return(20) },
+            Factory.node.tap { |x| x.stub(:monitor).and_return(30) },
           ]
         )
 
@@ -95,9 +96,9 @@ CombinedWeight: 60
         BigBrother.clusters['test'] = Factory.cluster(
           :name => 'test',
           :nodes => [
-            Factory.node(:weight => 10),
-            Factory.node(:weight => 20),
-            Factory.node(:weight => 30)
+            Factory.node.tap { |x| x.stub(:monitor).and_return(10) },
+            Factory.node.tap { |x| x.stub(:monitor).and_return(20) },
+            Factory.node.tap { |x| x.stub(:monitor).and_return(30) },
           ]
         )
 
@@ -198,6 +199,7 @@ CombinedWeight: 60
 
     describe "DELETE /cluster/:name" do
       it "marks the cluster as no longer monitored" do
+        BigBrother::HealthFetcher.stub(:current_health)
         BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
         BigBrother.clusters['test'].start_monitoring!
 

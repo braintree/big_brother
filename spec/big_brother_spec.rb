@@ -3,13 +3,14 @@ require 'spec_helper'
 describe BigBrother do
   describe '.monitor_nodes' do
     it "updates the weight for all the nodes in a cluster" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      BigBrother::HealthFetcher.stub(:current_health).and_return(76)
       node1 = Factory.node(:address => '127.0.0.1', :weight => 90)
       node2 = Factory.node(:address => '127.0.0.2', :weight => 30)
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node1, node2])
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
 
       cluster.nodes.map(&:weight).uniq.should == [56]
@@ -140,7 +141,6 @@ EOF
       end
       BigBrother.configure(config_file)
       BigBrother.clusters['test1'].start_monitoring!
-      @stub_executor.commands.clear
 
       BigBrother.start_ticker!
 
@@ -162,7 +162,7 @@ EOF
       BigBrother.reconfigure
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
 
-      @stub_executor.commands.first.should include("--weight 50")
+      @stub_executor.commands.last.should include("--weight 50")
     end
   end
 end

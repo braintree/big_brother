@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe BigBrother::ActiveActiveCluster do
+  before { BigBrother::HealthFetcher.stub(:current_health).and_return(10) }
+
   describe '#start_monitoring!' do
     it 'starts all non interpol nodes' do
       cluster = Factory.active_active_cluster(
@@ -15,9 +17,29 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.start_monitoring!
 
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0')
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 0')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 0')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 10')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 10')
+    end
+
+    it "monitors a node before adding it to ipvs" do
+      cluster = Factory.active_active_cluster(
+        :fwmark => 100,
+        :scheduler => 'wrr',
+        :offset => 10000,
+        :nodes => [
+          Factory.node(:interpol => false, :address => '127.0.0.1'),
+          Factory.node(:interpol => false, :address => '127.0.0.2'),
+          Factory.node(:interpol => true,  :address => '127.0.0.3'),
+        ],
+      )
+      BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
+
+      cluster.start_monitoring!
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 10")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 10")
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 10")
     end
 
     it 'starts all relay fwmark service' do
@@ -49,9 +71,9 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.start_monitoring!
 
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 0')
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 0')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 0')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 10')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 10')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 10')
     end
 
     it 'starts all interpol nodes' do
@@ -74,7 +96,6 @@ describe BigBrother::ActiveActiveCluster do
 
   describe "#monitor_nodes" do
     it "update weight of local ipvs nodes" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
@@ -82,6 +103,7 @@ describe BigBrother::ActiveActiveCluster do
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:current_health).and_return(41)
       cluster.monitor_nodes
@@ -91,7 +113,6 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "update weight of relay ipvs nodes" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
@@ -99,6 +120,7 @@ describe BigBrother::ActiveActiveCluster do
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:current_health).and_return(41)
       cluster.monitor_nodes
@@ -108,16 +130,15 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "does not update remote nodes for relay fwmark" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 91,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
       cluster = Factory.active_active_cluster(:fwmark => 100, :nodes => [node, interpol_node], :offset => 10_000)
       @stub_executor.commands.clear
 
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.resume_monitoring!
       cluster.monitor_nodes
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 130,'count' => 2,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 65}])
       cluster.monitor_nodes
 
@@ -125,7 +146,6 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "update weight of remote nodes" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
@@ -133,11 +153,11 @@ describe BigBrother::ActiveActiveCluster do
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
 
-      cluster.instance_variable_get(:@remote_nodes).first.weight.should == 45
+      cluster.remote_nodes.first.weight.should == 45
 
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 130,'count' => 2,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 65}])
       cluster.monitor_nodes
 
@@ -146,7 +166,6 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "does not update weight of remote nodes if the weight has not changed" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 55}])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
@@ -154,8 +173,8 @@ describe BigBrother::ActiveActiveCluster do
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
-      cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 130,'count' => 2,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
@@ -166,7 +185,6 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "update weight of remote not returned to 0" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
@@ -174,8 +192,8 @@ describe BigBrother::ActiveActiveCluster do
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
-      cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
+      cluster.monitor_nodes
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.monitor_nodes
 
@@ -184,7 +202,6 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "adds newly discovered remote nodes to ipvs" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
@@ -195,11 +212,11 @@ describe BigBrother::ActiveActiveCluster do
       @stub_executor.commands.clear
 
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
+      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       cluster.monitor_nodes
 
-      cluster.instance_variable_get(:@remote_nodes).size.should == 1
+      cluster.remote_nodes.size.should == 1
 
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return(
         [
           {'aggregated_health' => 130,'count' => 2,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 65},
@@ -216,7 +233,6 @@ describe BigBrother::ActiveActiveCluster do
     end
 
     it "removes a remote node from ipvs if it has been down for too many ticks" do
-      BigBrother::HealthFetcher.stub(:current_health).and_return(56)
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       node = Factory.node(:address => '127.0.0.1')
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
