@@ -66,14 +66,20 @@ EOF
 test1:
   check_interval: 1
   scheduler: wrr
+  backend_mode: 'active_active'
   fwmark: 1
   nodes:
   - address: 127.0.0.1
     port: 9001
     path: /test/another/path
+  - address: 127.0.0.9
+    port: 9000
+    path: /fwmark
+    interpol: true
 EOF
       end
       BigBrother.reconfigure
+      BigBrother.clusters['test1'].class.should == BigBrother::ActiveActiveCluster
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
     end
 
