@@ -17,15 +17,15 @@ describe BigBrother::Configuration do
       clusters['test2'].check_interval.should == 2
       clusters['test2'].scheduler.should == 'wrr'
       clusters['test2'].fwmark.should == 2
-      clusters['test2'].offset.should == 10000
-      clusters['test2'].max_down_ticks.should == 100
-      clusters['test2'].ramp_up_time.should == 60
 
       clusters['test3'].check_interval.should == 1
       clusters['test3'].scheduler.should == 'wrr'
       clusters['test3'].fwmark.should == 3
 
       clusters['test4'].backend_mode.should == 'active_active'
+      clusters['test4'].offset.should == 10000
+      clusters['test4'].max_down_ticks.should == 100
+      clusters['test4'].ramp_up_time.should == 60
     end
 
     it 'populates a clusters nodes' do

@@ -11,7 +11,7 @@ module BigBrother
     end
 
     def self.interpol_status(interpol_node, fwmark)
-      url = "http://#{interpol_node.address}:#{interpol_node.port}/#{fwmark}/status"
+      url = "http://#{interpol_node.address}:#{interpol_node.port}/fwmark/#{fwmark}"
 
       BigBrother.logger.debug("Fetching health from #{url}")
       response = EventMachine::HttpRequest.new(url).get

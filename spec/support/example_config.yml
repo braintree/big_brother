@@ -23,10 +23,8 @@ test1:
     priority: 1
 test2:
   check_interval: 2
-  backend_mode: "active_active"
   scheduler: wrr
   fwmark: 2
-  max_down_ticks: 100
   nodes:
   - address: 127.0.0.1
     port: 9001
@@ -49,6 +47,7 @@ test4:
   check_interval: 1
   scheduler: wrr
   fwmark: 4
+  max_down_ticks: 100
   backend_mode: 'active_active'
   nodes:
   - address: 127.0.0.1
@@ -57,3 +56,4 @@ test4:
   - address: 196.168.0.2
     port: 9292
     interpol: true
+    path: /fwmark

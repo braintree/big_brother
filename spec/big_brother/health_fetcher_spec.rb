@@ -56,7 +56,7 @@ Connection: close
 
 [{"aggregated_health":0,"count":1,"lb_ip_address":"load1.stq","lb_url":"http://load1.stq:80/lvs.json","health":0}]
 HTTP
-      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true), 'test').should == [
+      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true, :path => '/fwmark'), 'test').should == [
         {"aggregated_health" => 0,"count" => 1,"lb_ip_address" => "load1.stq","lb_url" => "http://load1.stq:80/lvs.json","health" => 0}
       ]
     end
@@ -67,7 +67,7 @@ HTTP/1.0 503 OK
 Connection: close
 
 HTTP
-      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true), 'test').should == []
+      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true, :path => '/fwmark'), 'test').should == []
     end
 
     it "returns an empty list for an unknown service" do
@@ -75,11 +75,11 @@ HTTP
 HTTP/1.0 503 Service Unavailable
 Connection: close
 HTTP
-      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true), 'test').should == []
+      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true, :path => '/fwmark'), 'test').should == []
     end
 
     it "returns 0 for an unknown DNS entry" do
-      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "junk.local", :port => 8081, :interpol => true), 'test').should == []
+      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "junk.local", :port => 8081, :interpol => true, :path => '/fwmark'), 'test').should == []
     end
 
     it "returns empty list for an unparseable response body" do
@@ -89,7 +89,7 @@ Connection: close
 
 This part is for people.
 HTTP
-      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true), 'test').should == []
+      BigBrother::HealthFetcher.interpol_status(Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true, :path => '/fwmark'), 'test').should == []
     end
   end
 
