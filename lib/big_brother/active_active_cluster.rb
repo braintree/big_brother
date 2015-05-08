@@ -68,6 +68,30 @@ module BigBrother
       nodes.map(&:address)
     end
 
+    def incorporate_state(cluster)
+      ipvs_state = BigBrother.ipvs.running_configuration
+      if ipvs_state[fwmark.to_s] && ipvs_state[_relay_fwmark.to_s].nil?
+        BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
+      end
+
+      if ipvs_state[fwmark.to_s] && ipvs_state.fetch(_relay_fwmark.to_s, []).empty?
+        nodes.each do |node|
+          actual_node = cluster.find_node(node.address, node.port)
+          BigBrother.ipvs.start_node(_relay_fwmark, actual_node.address, actual_node.weight)
+        end
+      end
+
+      super(cluster)
+    end
+
+    def stop_relay_fwmark
+      nodes.each do |node|
+        BigBrother.ipvs.stop_node(_relay_fwmark, node.address)
+      end
+
+      BigBrother.ipvs.stop_cluster(_relay_fwmark)
+    end
+
     def _relay_fwmark
       fwmark + offset
     end

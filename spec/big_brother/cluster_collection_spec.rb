@@ -28,6 +28,30 @@ describe BigBrother::ClusterCollection do
       collection.config({'existing_cluster' => cluster_from_config})
     end
 
+    it "ensures an active_active_cluster does a proper cleanup if it is transitioning to a different type of cluster" do
+      collection = BigBrother::ClusterCollection.new
+
+      existing_cluster = Factory.active_active_cluster(:name => 'existing_cluster')
+      collection['existing_cluster'] = existing_cluster
+      cluster_from_config = Factory.cluster(:name => 'existing_cluster')
+
+      existing_cluster.should_receive(:stop_relay_fwmark)
+
+      collection.config({'existing_cluster' => cluster_from_config})
+    end
+
+    it "does not make an active_active_cluster do a clean up if it is being updated" do
+      collection = BigBrother::ClusterCollection.new
+
+      existing_cluster = Factory.active_active_cluster(:name => 'existing_cluster')
+      collection['existing_cluster'] = existing_cluster
+      cluster_from_config = Factory.active_active_cluster(:name => 'existing_cluster')
+
+      existing_cluster.should_not_receive(:stop_relay_fwmark)
+
+      collection.config({'existing_cluster' => cluster_from_config})
+    end
+
     it "stops and removes clusters not included in the next configuration" do
       test2 = Factory.cluster(:name => 'test2', :fwmark => 102)
       collection = BigBrother::ClusterCollection.new

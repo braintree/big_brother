@@ -340,4 +340,36 @@ describe BigBrother::ActiveActiveCluster do
       @stub_executor.commands.should include("ipvsadm --delete-service --fwmark-service 10001")
     end
   end
+
+  describe "#incorporate_state" do
+    it "starts a relay_fwmark when it is not started" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+      active_active_cluster = Factory.active_active_cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1'), Factory.node(:address => "127.0.1.1"), Factory.node(:address => "127.1.1.1", :interpol => true)])
+      cluster = Factory.cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1', :weight => 80), Factory.node(:address => "127.0.1.1", :weight => 100)])
+
+      active_active_cluster.incorporate_state(cluster)
+
+      @stub_executor.commands.should == ["ipvsadm --add-service --fwmark-service 10001 --scheduler wrr", "ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.0.1 --ipip --weight 80", "ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.1.1 --ipip --weight 100"]
+    end
+
+    it "does not starts a relay_fwmark when the cluster is not running" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'2' => ['127.0.0.1']})
+      active_active_cluster = Factory.active_active_cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1'), Factory.node(:address => "127.0.1.1"), Factory.node(:address => "127.1.1.1", :interpol => true)])
+      cluster = Factory.cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1', :weight => 80), Factory.node(:address => "127.0.1.1", :weight => 100)])
+
+      active_active_cluster.incorporate_state(cluster)
+
+      @stub_executor.commands.should be_empty
+    end
+  end
+
+  describe "#stop_relay_fwmark" do
+    it "stops relay fwmark and all nodes in the relay fwmark" do
+      active_active_cluster = Factory.active_active_cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1'), Factory.node(:address => "127.0.1.1"), Factory.node(:address => "127.1.1.1", :interpol => true)])
+
+      active_active_cluster.stop_relay_fwmark
+
+      @stub_executor.commands.should == ["ipvsadm --delete-server --fwmark-service 10001 --real-server 127.0.0.1", "ipvsadm --delete-server --fwmark-service 10001 --real-server 127.0.1.1", "ipvsadm --delete-service --fwmark-service 10001"]
+    end
+  end
 end
