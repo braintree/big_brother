@@ -4,6 +4,7 @@ module BigBrother
   class Node
     attr_reader :address, :port, :path, :start_time, :priority
     attr_accessor :weight, :down_tick_count
+    INITIAL_WEIGHT = 1
 
     def initialize(attributes={})
       @address = attributes[:address]

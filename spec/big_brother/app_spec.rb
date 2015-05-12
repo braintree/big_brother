@@ -42,9 +42,9 @@ module BigBrother
         BigBrother.clusters['test'] = Factory.cluster(
           :name => 'test',
           :nodes => [
-            Factory.node.tap { |x| x.stub(:monitor).and_return(10) },
-            Factory.node.tap { |x| x.stub(:monitor).and_return(20) },
-            Factory.node.tap { |x| x.stub(:monitor).and_return(30) },
+            Factory.node,
+            Factory.node,
+            Factory.node,
           ]
         )
 
@@ -54,7 +54,7 @@ module BigBrother
         last_response.status.should == 200
         last_response.body.should == <<-RESPONSE_BODY
 Running: true
-CombinedWeight: 60
+CombinedWeight: 300
         RESPONSE_BODY
       end
 
@@ -96,9 +96,9 @@ CombinedWeight: 60
         BigBrother.clusters['test'] = Factory.cluster(
           :name => 'test',
           :nodes => [
-            Factory.node.tap { |x| x.stub(:monitor).and_return(10) },
-            Factory.node.tap { |x| x.stub(:monitor).and_return(20) },
-            Factory.node.tap { |x| x.stub(:monitor).and_return(30) },
+            Factory.node,
+            Factory.node,
+            Factory.node,
           ]
         )
 
@@ -108,7 +108,7 @@ CombinedWeight: 60
         last_response.status.should == 200
         last_response.body.should == <<-RESPONSE_BODY
 Running: true
-CombinedWeight: 60
+CombinedWeight: 300
         RESPONSE_BODY
       end
 
@@ -170,8 +170,8 @@ CombinedWeight: 60
         last_response.body.should == "OK"
         BigBrother.clusters['test'].should be_monitored
         @stub_executor.commands.should include("ipvsadm --add-service --fwmark-service 100 --scheduler wrr")
-        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
-        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 0")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 1")
+        @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 1")
       end
 
       it "attempts to synchronize the nodes in the cluster" do
