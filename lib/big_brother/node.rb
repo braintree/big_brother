@@ -2,7 +2,7 @@ require 'net/http'
 
 module BigBrother
   class Node
-    attr_reader :address, :port, :path, :start_time, :priority
+    attr_reader :address, :port, :path, :start_time, :priority, :max_weight
     attr_accessor :weight, :down_tick_count
     INITIAL_WEIGHT = 1
 
@@ -14,6 +14,7 @@ module BigBrother
       @start_time = attributes.fetch(:start_time, Time.now.to_i)
       @priority = attributes.fetch(:priority, 0)
       @interpol = attributes.fetch(:interpol, false)
+      @max_weight = attributes[:max_weight]
       @down_tick_count = 0
     end
 
@@ -62,7 +63,15 @@ module BigBrother
       elsif cluster.down_file_exists?
         0
       else
-        _weight_health(BigBrother::HealthFetcher.current_health(@address, @port, @path), cluster.ramp_up_time)
+        _cap_weight(_weight_health(BigBrother::HealthFetcher.current_health(@address, @port, @path), cluster.ramp_up_time))
+      end
+    end
+
+    def _cap_weight(health)
+      if !@max_weight.nil? && @max_weight.is_a?(Integer) && @max_weight > 0 && @max_weight < health
+        @max_weight
+      else
+        health
       end
     end
 

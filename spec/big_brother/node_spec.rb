@@ -39,6 +39,14 @@ describe BigBrother::Node do
 
       node.monitor(cluster).should == 0
     end
+
+    it "caps the weight of a node to the max_weight configured" do
+      BigBrother::HealthFetcher.stub(:current_health).and_return(100)
+      node = Factory.node(:address => '127.0.0.1', :max_weight => 10)
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+
+      node.monitor(cluster).should == 10
+    end
   end
 
   describe "#==" do
