@@ -22,26 +22,6 @@ describe BigBrother::ActiveActiveCluster do
       @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 10')
     end
 
-    it "monitors a node before adding it to ipvs" do
-      cluster = Factory.active_active_cluster(
-        :fwmark => 100,
-        :scheduler => 'wrr',
-        :offset => 10000,
-        :nodes => [
-          Factory.node(:interpol => false, :address => '127.0.0.1'),
-          Factory.node(:interpol => false, :address => '127.0.0.2'),
-          Factory.node(:interpol => true,  :address => '127.0.0.3'),
-        ],
-      )
-      BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
-
-      cluster.start_monitoring!
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10")
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 10")
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 10")
-      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 10")
-    end
-
     it 'starts all relay fwmark service' do
       cluster = Factory.active_active_cluster(
         :fwmark => 100,
@@ -76,18 +56,58 @@ describe BigBrother::ActiveActiveCluster do
       @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 10')
     end
 
-    it 'starts all interpol nodes' do
+    it 'does not start interpol nodes when the remote relay cluster is non-existent' do
+      node = Factory.node(:interpol => true,  :address => '127.0.0.3')
       cluster = Factory.active_active_cluster(
         :fwmark => 100,
         :scheduler => 'wrr',
         :nodes => [
           Factory.node(:interpol => false, :address => '127.0.0.1'),
           Factory.node(:interpol => false, :address => '127.0.0.2'),
-          Factory.node(:interpol => true,  :address => '127.0.0.3'),
+          node,
         ],
       )
 
-      BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([])
+      cluster.start_monitoring!
+
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')
+    end
+
+    it 'does not start interpol nodes when the remote regular cluster is non-existent' do
+      node = Factory.node(:interpol => true,  :address => '127.0.0.3')
+      cluster = Factory.active_active_cluster(
+        :fwmark => 100,
+        :scheduler => 'wrr',
+        :nodes => [
+          Factory.node(:interpol => false, :address => '127.0.0.1'),
+          Factory.node(:interpol => false, :address => '127.0.0.2'),
+          node,
+        ],
+      )
+
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([])
+      cluster.start_monitoring!
+
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')
+    end
+
+    it 'starts all interpol nodes if both the regular and relay remote clusters exist' do
+      node = Factory.node(:interpol => true,  :address => '127.0.0.3')
+      cluster = Factory.active_active_cluster(
+        :fwmark => 100,
+        :scheduler => 'wrr',
+        :nodes => [
+          Factory.node(:interpol => false, :address => '127.0.0.1'),
+          Factory.node(:interpol => false, :address => '127.0.0.2'),
+          node,
+        ],
+      )
+
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       cluster.start_monitoring!
 
       @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')

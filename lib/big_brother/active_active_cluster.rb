@@ -115,7 +115,12 @@ module BigBrother
     end
 
     def _fetch_remote_nodes
-      BigBrother::HealthFetcher.interpol_status(interpol_node, fwmark).each_with_object({}) do |node, hsh|
+      regular_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, fwmark)
+      relay_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, _relay_fwmark)
+
+      return {} if regular_remote_cluster.empty? || relay_remote_cluster.empty?
+
+      regular_remote_cluster.each_with_object({}) do |node, hsh|
         hsh[node['lb_ip_address']] = BigBrother::Node.new(:address => node['lb_ip_address'], :weight => node['health'])
       end
     end
