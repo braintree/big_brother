@@ -49,6 +49,8 @@ test4:
   fwmark: 4
   max_down_ticks: 100
   backend_mode: 'active_active'
+  non_egress_locations:
+  - 'test'
   nodes:
   - address: 127.0.0.1
     port: 9001

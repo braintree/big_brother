@@ -26,6 +26,7 @@ describe BigBrother::Configuration do
       clusters['test4'].offset.should == 10000
       clusters['test4'].max_down_ticks.should == 100
       clusters['test4'].ramp_up_time.should == 60
+      clusters['test4'].non_egress_locations.should == ['test']
     end
 
     it 'populates a clusters nodes' do

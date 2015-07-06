@@ -112,6 +112,29 @@ describe BigBrother::ActiveActiveCluster do
 
       @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')
     end
+
+    it 'does not start interpol nodes if their "lb_source_location" is included in the "non_egress_locations"' do
+      node = Factory.node(:interpol => true,  :address => '127.0.0.3')
+      cluster = Factory.active_active_cluster(
+        :fwmark => 100,
+        :scheduler => 'wrr',
+        :non_egress_locations => ['test'],
+        :nodes => [
+          Factory.node(:interpol => false, :address => '127.0.0.1'),
+          Factory.node(:interpol => false, :address => '127.0.0.2'),
+          node,
+        ],
+      )
+
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45, 'lb_source_location' => 'test'}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45, 'lb_source_location' => 'test'}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.2','lb_url' => 'http://172.27.3.2','health' => 55, 'lb_source_location' => 'foo'}])
+      BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.2','lb_url' => 'http://172.27.3.2','health' => 55, 'lb_source_location' => 'foo'}])
+      cluster.start_monitoring!
+
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.2 --ipip --weight 55')
+    end
   end
 
   describe "#monitor_nodes" do

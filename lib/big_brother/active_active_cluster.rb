@@ -1,6 +1,6 @@
 module BigBrother
   class ActiveActiveCluster < BigBrother::Cluster
-    attr_reader :interpol_node, :max_down_ticks, :offset, :remote_nodes, :local_nodes
+    attr_reader :interpol_node, :max_down_ticks, :offset, :remote_nodes, :local_nodes, :non_egress_locations
 
     def initialize(name, attributes={})
       super(name, attributes)
@@ -10,6 +10,7 @@ module BigBrother
       @remote_nodes = []
       @max_down_ticks = attributes.fetch(:max_down_ticks, 0)
       @offset = attributes.fetch(:offset, 10_000)
+      @non_egress_locations = *attributes.fetch(:non_egress_locations, [])
     end
 
     def start_monitoring!
@@ -121,6 +122,8 @@ module BigBrother
       return {} if regular_remote_cluster.empty? || relay_remote_cluster.empty?
 
       regular_remote_cluster.each_with_object({}) do |node, hsh|
+        next if self.non_egress_locations.include?(node['lb_source_location'])
+
         hsh[node['lb_ip_address']] = BigBrother::Node.new(:address => node['lb_ip_address'], :weight => node['health'])
       end
     end
