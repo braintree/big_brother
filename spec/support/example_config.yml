@@ -1,61 +1,62 @@
 ---
 _big_brother:
   offset: 10000
-test1:
-  check_interval: 1
-  backend_mode: "active_passive"
-  scheduler: wrr
-  fwmark: 1
-  ramp_up_time: 120
-  has_downpage: true
-  nagios:
-    server: nsca.host
-    check: test1_status
-    host: prod-load
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
-    priority: 0
-  - address: 127.0.0.1
-    port: 9002
-    path: /test/valid
-    priority: 1
-test2:
-  check_interval: 2
-  scheduler: wrr
-  fwmark: 2
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/invalid
-  - address: 127.0.0.1
-    port: 9002
-    path: /test/invalid
-test3:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 3
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
-  - address: 127.0.0.1
-    port: 9002
-    path: /test/invalid
-test4:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 4
-  max_down_ticks: 100
-  backend_mode: 'active_active'
-  non_egress_locations:
-  - 'test'
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
-  - address: 196.168.0.2
-    port: 9292
-    interpol: true
-    path: /fwmark
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    backend_mode: "active_passive"
+    scheduler: wrr
+    fwmark: 1
+    ramp_up_time: 120
+    has_downpage: true
+    nagios:
+      server: nsca.host
+      check: test1_status
+      host: prod-load
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
+        priority: 0
+      - address: 127.0.0.1
+        port: 9002
+        path: /test/valid
+        priority: 1
+  - cluster_name: test2
+    check_interval: 2
+    scheduler: wrr
+    fwmark: 2
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/invalid
+      - address: 127.0.0.1
+        port: 9002
+        path: /test/invalid
+  - cluster_name: test3
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 3
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
+      - address: 127.0.0.1
+        port: 9002
+        path: /test/invalid
+  - cluster_name: test4
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 4
+    max_down_ticks: 100
+    backend_mode: 'active_active'
+    non_egress_locations:
+      - 'test'
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
+      - address: 196.168.0.2
+        port: 9292
+        interpol: true
+        path: /fwmark

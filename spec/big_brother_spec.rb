@@ -46,14 +46,15 @@ HTTP
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
 ---
-test1:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 1
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 1
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
 EOF
       end
       BigBrother.configure(config_file)
@@ -63,19 +64,20 @@ EOF
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
 ---
-test1:
-  check_interval: 1
-  scheduler: wrr
-  backend_mode: 'active_active'
-  fwmark: 1
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/another/path
-  - address: 127.0.0.9
-    port: 9000
-    path: /fwmark
-    interpol: true
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    scheduler: wrr
+    backend_mode: 'active_active'
+    fwmark: 1
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/another/path
+      - address: 127.0.0.9
+        port: 9000
+        path: /fwmark
+        interpol: true
 EOF
       end
       BigBrother.reconfigure
@@ -89,14 +91,15 @@ EOF
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
 ---
-test1:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 1
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 1
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
 EOF
       end
       BigBrother.configure(config_file)
@@ -109,17 +112,18 @@ EOF
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
 ---
-test1:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 1
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
-  - address: 127.0.0.2
-    port: 9001
-    path: /test/valid
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 1
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
+      - address: 127.0.0.2
+        port: 9001
+        path: /test/valid
 EOF
       end
       BigBrother.reconfigure
@@ -134,15 +138,16 @@ EOF
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
 ---
-test1:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 1
-  ramp_up_time: 0
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/valid
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 1
+    ramp_up_time: 0
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/valid
 EOF
       end
       BigBrother.configure(config_file)
@@ -155,14 +160,15 @@ EOF
       File.open(config_file, 'w') do |f|
         f.puts(<<-EOF)
 ---
-test1:
-  check_interval: 1
-  scheduler: wrr
-  fwmark: 1
-  nodes:
-  - address: 127.0.0.1
-    port: 9001
-    path: /test/another/path
+clusters:
+  - cluster_name: test1
+    check_interval: 1
+    scheduler: wrr
+    fwmark: 1
+    nodes:
+      - address: 127.0.0.1
+        port: 9001
+        path: /test/another/path
 EOF
       end
       BigBrother.reconfigure

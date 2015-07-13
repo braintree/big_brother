@@ -2,7 +2,44 @@ require 'spec_helper'
 
 describe BigBrother::Configuration do
   describe 'self.from_file' do
-    it 'maintain a collection of clusters' do
+    context 'loading invalid config' do
+      before do
+        @config_file = Tempfile.new('config.yml')
+        File.open(@config_file, 'w') do |f|
+          f.puts(<<-EOF)
+---
+clusters:
+  - cluster_name: 1
+    check_interval: ""
+    scheduler: wrr
+    fwmark: 1
+    nodes:
+      - address: 127.0.0
+        port: 9001
+        path: /test/valid
+          EOF
+        end
+      end
+
+      it 'fails' do
+        BigBrother.configure(@config_file.path)
+
+        BigBrother.clusters.size.should be_zero
+      end
+
+      it 'logs errors' do
+        errors = ["- [/clusters/0/cluster_name] '1': not a string.", "- [/clusters/0/check_interval] '': not a integer.", "- [/clusters/0/nodes/0/address] '127.0.0': not matched to pattern /^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$/."]
+
+        BigBrother.logger = NullLogger.new([])
+        BigBrother::Configuration.from_file(@config_file.path)
+
+        BigBrother.logger.messages.should == errors
+
+        BigBrother.logger = NullLogger.new
+      end
+    end
+
+    it 'maintains a collection of clusters' do
       clusters = BigBrother::Configuration.from_file(TEST_CONFIG)
 
       clusters['test1'].check_interval.should == 1
@@ -52,28 +89,29 @@ describe BigBrother::Configuration do
           ---
           _big_brother:
             check_interval: 2
-            scheduler: wrr
             nagios:
               server: 127.0.0.2
               host: ha-services
-          test_without_overrides:
-            fwmark: 2
-            nagios:
-              check: test_check
-            nodes:
-            - address: 127.0.0.1
-              port: 9001
-              path: /test/invalid
-          test_with_overrides:
-            fwmark: 3
-            scheduler: wlc
-            nagios:
-              host: override-host
-              check: test_overrides_check
-            nodes:
-            - address: 127.0.0.1
-              port: 9001
-              path: /test/invalid
+          clusters:
+            - cluster_name: test_without_overrides
+              scheduler: wrr
+              fwmark: 2
+              nagios:
+                check: test_check
+              nodes:
+                - address: 127.0.0.1
+                  port: 9001
+                  path: /test/invalid
+            - cluster_name: test_with_overrides
+              fwmark: 3
+              scheduler: wlc
+              nagios:
+                host: override-host
+                check: test_overrides_check
+              nodes:
+                - address: 127.0.0.1
+                  port: 9001
+                  path: /test/invalid
         EOF
       end
 

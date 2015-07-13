@@ -4,6 +4,7 @@ require 'em-synchrony/em-http'
 require 'em/syslog'
 require 'thin'
 require 'yaml'
+require 'kwalify'
 
 require 'sinatra/synchrony'
 

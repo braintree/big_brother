@@ -4,10 +4,14 @@ module BigBrother
 
     def self.from_file(config_file)
       config = YAML.load_file(config_file)
+      return {} unless _valid?(config)
+
+      configured_clusters = config.fetch("clusters")
       defaults = config.delete(GLOBAL_CONFIG_KEY)
 
-      config.inject({}) do |clusters, (cluster_name, cluster_values)|
-        cluster_details = _apply_defaults(defaults, cluster_values)
+      configured_clusters.inject({}) do |clusters, cluster|
+        cluster_details = _apply_defaults(defaults, cluster)
+        cluster_name    = cluster.fetch("cluster_name")
         clusters.merge(cluster_name => BigBrother::ClusterFactory.create_cluster(cluster_name, _deeply_symbolize_keys(cluster_details)))
       end
     end
@@ -30,6 +34,17 @@ module BigBrother
       defaults_hash.merge(settings_hash) do |key, oldval, newval|
         oldval.is_a?(Hash) && newval.is_a?(Hash) ? _apply_defaults(oldval, newval) : newval
       end
+    end
+
+    def self._valid?(config)
+      schema_path = File.join(File.dirname(__FILE__), "../resources", "config_schema.yml")
+      schema = YAML.load_file(schema_path)
+      validator = Kwalify::Validator.new(schema)
+      errors = validator.validate(config)
+      if errors && !errors.empty?
+        errors.each { |err| BigBrother.logger.info("- [#{err.path}] #{err.message}") }
+      end
+      !(errors && !errors.empty?)
     end
   end
 end
