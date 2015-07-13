@@ -56,6 +56,21 @@ describe BigBrother::ActiveActiveCluster do
       @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 10')
     end
 
+    it 'does not attempt to retrieve interpol status if there is no interpol node' do
+      cluster = Factory.active_active_cluster(
+        :fwmark => 100,
+        :scheduler => 'wrr',
+        :nodes => [
+          Factory.node(:interpol => false, :address => '127.0.0.1'),
+          Factory.node(:interpol => false, :address => '127.0.0.2'),
+        ],
+      )
+
+      BigBrother::HealthFetcher.should_not_receive(:interpol_status)
+
+      cluster.start_monitoring!
+    end
+
     it 'does not start interpol nodes when the remote relay cluster is non-existent' do
       node = Factory.node(:interpol => true,  :address => '127.0.0.3')
       cluster = Factory.active_active_cluster(

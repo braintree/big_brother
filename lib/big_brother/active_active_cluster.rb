@@ -116,6 +116,8 @@ module BigBrother
     end
 
     def _fetch_remote_nodes
+      return {} if interpol_node.nil?
+
       regular_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, fwmark)
       relay_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, _relay_fwmark)
 
