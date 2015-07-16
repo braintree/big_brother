@@ -41,10 +41,13 @@ module BigBrother
       schema = YAML.load_file(schema_path)
       validator = Kwalify::Validator.new(schema)
       errors = validator.validate(config)
-      if errors && !errors.empty?
+      valid = !(errors && !errors.empty?)
+
+      unless valid
         errors.each { |err| BigBrother.logger.info("- [#{err.path}] #{err.message}") }
       end
-      !(errors && !errors.empty?)
+
+      valid
     end
   end
 end

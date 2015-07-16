@@ -16,6 +16,7 @@ clusters:
     nodes:
       - address: 127.0.0.1
         port: 9001
+        max_weight:
         path: /test/valid
         priority: 0
       - address: 127.0.0.1
@@ -29,6 +30,7 @@ clusters:
     nodes:
       - address: 127.0.0.1
         port: 9001
+        max_weight:
         path: /test/invalid
       - address: 127.0.0.1
         port: 9002
@@ -40,6 +42,7 @@ clusters:
     nodes:
       - address: 127.0.0.1
         port: 9001
+        max_weight:
         path: /test/valid
       - address: 127.0.0.1
         port: 9002
@@ -56,6 +59,7 @@ clusters:
       - address: 127.0.0.1
         port: 9001
         path: /test/valid
+        max_weight:
       - address: 196.168.0.2
         port: 9292
         interpol: true

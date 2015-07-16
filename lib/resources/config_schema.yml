@@ -80,6 +80,8 @@ mapping:
                      required:  yes
                    "interpol":
                      type:      bool
+                   "max_weight":
+                     type:      int
                    "priority":
                      type:      int
                    "port":
