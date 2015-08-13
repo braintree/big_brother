@@ -18,9 +18,8 @@ module BigBrother
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       local_nodes.each do |node|
-        node.weight = node.monitor(self)
-        BigBrother.ipvs.start_node(@fwmark, node.address, node.weight)
-        BigBrother.ipvs.start_node(_relay_fwmark, node.address, node.weight)
+        BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
+        BigBrother.ipvs.start_node(_relay_fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
       end
 
       _monitor_remote_nodes

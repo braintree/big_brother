@@ -17,9 +17,9 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.start_monitoring!
 
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 10')
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 10')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 10')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 1')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.2 --ipip --weight 1')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.3 --ipip --weight 1')
     end
 
     it 'starts all relay fwmark service' do
@@ -51,9 +51,9 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).and_return([])
       cluster.start_monitoring!
 
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 10')
-      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 10')
-      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 10')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 1')
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.2 --ipip --weight 1')
+      @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 10100 --real-server 127.0.0.3 --ipip --weight 1')
     end
 
     it 'does not attempt to retrieve interpol status if there is no interpol node' do
