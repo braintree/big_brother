@@ -124,6 +124,7 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.1','lb_url' => 'http://172.27.3.1','health' => 45}])
       cluster.start_monitoring!
+      cluster.monitor_nodes
 
       @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')
     end
@@ -146,6 +147,7 @@ describe BigBrother::ActiveActiveCluster do
       BigBrother::HealthFetcher.stub(:interpol_status).with(node, 100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.2','lb_url' => 'http://172.27.3.2','health' => 55, 'lb_source_location' => 'foo'}])
       BigBrother::HealthFetcher.stub(:interpol_status).with(node, 10100).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.3.2','lb_url' => 'http://172.27.3.2','health' => 55, 'lb_source_location' => 'foo'}])
       cluster.start_monitoring!
+      cluster.monitor_nodes
 
       @stub_executor.commands.should_not include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.1 --ipip --weight 45')
       @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 172.27.3.2 --ipip --weight 55')
@@ -229,6 +231,7 @@ describe BigBrother::ActiveActiveCluster do
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
       cluster = Factory.active_active_cluster(:fwmark => 100, :nodes => [node, interpol_node])
       cluster.start_monitoring!
+      cluster.monitor_nodes
       @stub_executor.commands.clear
 
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
@@ -296,6 +299,7 @@ describe BigBrother::ActiveActiveCluster do
       interpol_node = Factory.node(:address => '172.27.3.1', :interpol => true)
       cluster = Factory.active_active_cluster(:fwmark => 100, :nodes => [node, interpol_node], :max_down_ticks => 100)
       cluster.start_monitoring!
+      cluster.monitor_nodes
       @stub_executor.commands.clear
 
       (cluster.max_down_ticks + 1).times do
