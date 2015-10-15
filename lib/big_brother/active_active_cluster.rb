@@ -82,6 +82,9 @@ module BigBrother
       end
 
       BigBrother.logger.info "Merging in new active/active cluster #{to_s}"
+
+      @remote_nodes = cluster.remote_nodes
+
       super(cluster)
     end
 
