@@ -49,6 +49,7 @@ module BigBrother
 
     def synchronize!
       ipvs_state = BigBrother.ipvs.running_configuration
+      @remote_nodes = _fetch_remote_nodes.values if @remote_nodes == []
       if ipvs_state.has_key?(fwmark.to_s)
         resume_monitoring!
 
