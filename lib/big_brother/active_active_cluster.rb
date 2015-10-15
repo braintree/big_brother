@@ -22,7 +22,6 @@ module BigBrother
         BigBrother.ipvs.start_node(_relay_fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
       end
 
-      _monitor_remote_nodes
       @monitored = true
     end
 
@@ -128,13 +127,6 @@ module BigBrother
         next if self.non_egress_locations.include?(node['lb_source_location'])
 
         hsh[node['lb_ip_address']] = BigBrother::Node.new(:address => node['lb_ip_address'], :weight => node['health'])
-      end
-    end
-
-    def _monitor_remote_nodes
-      @remote_nodes = _fetch_remote_nodes.values
-      remote_nodes.each do |node|
-        BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
       end
     end
 
