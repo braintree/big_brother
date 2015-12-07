@@ -43,7 +43,7 @@ module BigBrother
     end
 
     def start_monitoring!
-      BigBrother.logger.info "starting monitoring on cluster #{to_s}"
+      BigBrother.logger.info "Starting monitoring on cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       @nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
@@ -53,7 +53,7 @@ module BigBrother
     end
 
     def stop_monitoring!
-      BigBrother.logger.info "stopping monitoring on cluster #{to_s}"
+      BigBrother.logger.info "Stopping monitoring on cluster #{to_s}"
       BigBrother.ipvs.stop_cluster(@fwmark)
 
       @monitored = false
@@ -61,7 +61,7 @@ module BigBrother
     end
 
     def resume_monitoring!
-      BigBrother.logger.info "resuming monitoring on cluster #{to_s}"
+      BigBrother.logger.info "Resuming monitoring on cluster #{to_s}"
       @monitored = true
     end
 
@@ -120,18 +120,19 @@ module BigBrother
       nodes.each do |node|
         node.incorporate_state(another_cluster.find_node(node.address, node.port))
       end
+
       self
     end
 
     def _add_nodes(addresses)
       addresses.each do |address|
-        BigBrother.logger.info "adding #{address} to cluster #{self}"
+        BigBrother.logger.info "Adding #{address} to cluster #{self}"
         BigBrother.ipvs.start_node(fwmark, address, 0)
       end
     end
 
     def _add_maintenance_node
-      BigBrother.logger.info "adding 169.254.254.254 to cluster #{self}"
+      BigBrother.logger.info "Adding downpage to cluster #{self}"
       BigBrother.ipvs.start_node(fwmark, '169.254.254.254', 1)
     end
 
@@ -165,7 +166,7 @@ module BigBrother
 
     def _remove_nodes(addresses)
       addresses.each do |address|
-        BigBrother.logger.info "removing #{address} to cluster #{self}"
+        BigBrother.logger.info "Removing #{address} to cluster #{self}"
         BigBrother.ipvs.stop_node(fwmark, address)
       end
     end

@@ -14,7 +14,7 @@ module BigBrother
     end
 
     def start_monitoring!
-      BigBrother.logger.info "starting monitoring on cluster #{to_s}"
+      BigBrother.logger.info "Starting monitoring on active/active cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       local_nodes.each do |node|
@@ -22,7 +22,6 @@ module BigBrother
         BigBrother.ipvs.start_node(_relay_fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
       end
 
-      _monitor_remote_nodes
       @monitored = true
     end
 
@@ -50,6 +49,7 @@ module BigBrother
 
     def synchronize!
       ipvs_state = BigBrother.ipvs.running_configuration
+      @remote_nodes = _fetch_remote_nodes.values if @remote_nodes == []
       if ipvs_state.has_key?(fwmark.to_s)
         resume_monitoring!
 
@@ -71,6 +71,7 @@ module BigBrother
     def incorporate_state(cluster)
       ipvs_state = BigBrother.ipvs.running_configuration
       if ipvs_state[fwmark.to_s] && ipvs_state[_relay_fwmark.to_s].nil?
+        BigBrother.logger.info "Adding new active/active LB node #{to_s}"
         BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       end
 
@@ -80,6 +81,10 @@ module BigBrother
           BigBrother.ipvs.start_node(_relay_fwmark, actual_node.address, actual_node.weight)
         end
       end
+
+      BigBrother.logger.info "Merging in new active/active cluster #{to_s}"
+
+      @remote_nodes = cluster.remote_nodes if cluster.is_a?(BigBrother::ActiveActiveCluster)
 
       super(cluster)
     end
@@ -98,7 +103,7 @@ module BigBrother
 
     def _add_nodes(addresses, fwmark)
       addresses.each do |address|
-        BigBrother.logger.info "adding #{address} to cluster #{self}"
+        BigBrother.logger.info "Adding #{address} to active/active cluster #{self}"
         BigBrother.ipvs.start_node(fwmark, address, 0)
       end
     end
@@ -129,13 +134,6 @@ module BigBrother
       end
     end
 
-    def _monitor_remote_nodes
-      @remote_nodes = _fetch_remote_nodes.values
-      remote_nodes.each do |node|
-        BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
-      end
-    end
-
     def _add_remote_nodes(nodes)
       nodes.each do |node|
         BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
@@ -145,7 +143,7 @@ module BigBrother
 
     def _remove_nodes(addresses)
       addresses.each do |address|
-        BigBrother.logger.info "removing #{address} to cluster #{self}"
+        BigBrother.logger.info "Removing #{address} from active/active cluster #{self}"
         BigBrother.ipvs.stop_node(fwmark, address)
         BigBrother.ipvs.stop_node(_relay_fwmark, address)
       end
