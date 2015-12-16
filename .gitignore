@@ -10,6 +10,7 @@ InstalledFiles
 Vagrantfile
 _yardoc
 coverage
+debian/big-brother
 doc/
 lib/bundler/man
 pkg

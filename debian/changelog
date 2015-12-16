@@ -1,0 +1,5 @@
+big-brother (0.8.7-1) UNRELEASED; urgency=low
+
+  * Initial release (Closes: #nnnn)
+
+ -- Stephen Gelman <stephen.gelman@braintreepayments.com>  Wed, 16 Dec 2015 01:10:03 +0000
