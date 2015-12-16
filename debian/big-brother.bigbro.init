@@ -18,7 +18,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="HA Service monitor"
 NAME=bigbro
 DAEMON=/usr/bin/$NAME
-INTERPRETER=ruby1.9.1
+INTERPRETER=ruby
 PIDFILE=/var/run/$NAME.pid
 DAEMON_ARGS="--port 9000 --config /etc/big_brother/config.yml --data-dir /etc/big_brother --pid $PIDFILE --daemon"
 SCRIPTNAME=/etc/init.d/$NAME
@@ -34,7 +34,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 . /lib/lsb/init-functions
 
 # Exit if there is no config file
-[ -x "/etc/big_brother/config.yml" ] || exit 0
+[ -e "/etc/big_brother/config.yml" ] || exit 0
 
 #
 # Function that starts the daemon/service
