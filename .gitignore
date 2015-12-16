@@ -3,6 +3,7 @@
 *.swp
 .bundle
 .config
+.pc
 .vagrant
 .yardoc
 Gemfile.lock
