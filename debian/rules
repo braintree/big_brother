@@ -13,3 +13,6 @@
 
 %:
 	dh $@ --buildsystem=ruby --with ruby
+
+override_dh_installinit:
+	dh_installinit --name=bigbro
