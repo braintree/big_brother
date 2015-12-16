@@ -12,6 +12,7 @@ Vagrantfile
 _yardoc
 coverage
 debian/big-brother
+debian/big-brother.debhelper.log
 doc/
 lib/bundler/man
 pkg
