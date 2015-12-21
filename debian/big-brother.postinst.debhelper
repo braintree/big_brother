@@ -1,0 +1,6 @@
+# Automatically added by dh_installinit
+if [ -x "/etc/init.d/bigbro" ]; then
+	update-rc.d bigbro defaults >/dev/null
+	invoke-rc.d bigbro start || exit $?
+fi
+# End automatically added section

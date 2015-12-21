@@ -1,0 +1,19 @@
+Source: big-brother
+Section: ruby
+Priority: optional
+Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
+Uploaders: Stephen Gelman <stephen.gelman@braintreepayments.com>
+DM-Upload-Allowed: yes
+Build-Depends: debhelper (>= 7.0.50~), gem2deb (>= 0.3.0~), ruby-rspec, ruby-rack-test, rake
+Standards-Version: 3.9.3
+Vcs-Git: git://github.com/braintree/big_brother.git
+Vcs-Browser: https://github.com/braintree/big_brother
+Homepage: https://github.com/braintree/big_brother
+XS-Ruby-Versions: all
+
+Package: big-brother
+Architecture: all
+XB-Ruby-Versions: ${ruby:Versions}
+Depends: ${shlibs:Depends}, ${misc:Depends}, ruby | ruby-interpreter, thin, ruby-async-rack, ruby-sinatra (>= 1.0.0), ruby-rack-fiber-pool (>= 0.9.3), ruby-eventmachine (>= 1.0.0), ruby-em-http-request (>= 1.0.0), ruby-em-synchrony (>= 1.0.0), ruby-em-resolv-replace (>= 1.1.0), ruby-em-syslog (>= 0.0.2), kwalify (>= 0.7.2)
+Description: Process to monitor and update weights for servers in an IPVS pool
+ IPVS backend supervisor
