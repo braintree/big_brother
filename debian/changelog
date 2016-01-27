@@ -1,3 +1,9 @@
+big-brother (0.8.8-1) stable; urgency=low
+
+  * Automatically restore watched sessions on start
+
+ -- Michael Vallaly <mike@braintreepayments.com>  Wed, 27 Jan 2016 20:34:36 +0000
+
 big-brother (0.8.7-2) unstable; urgency=low
 
   * Add init script
