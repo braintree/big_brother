@@ -14,7 +14,7 @@ module BigBrother
         @clusters.delete(removed_name).stop_monitoring!
       end
 
-      current_state = BigBrother.ipvs.running_configuration
+      ipvs_state = BigBrother.ipvs.running_configuration
 
       new_clusters.each do |cluster_name, cluster|
         if @clusters.key?(cluster_name)
@@ -25,7 +25,7 @@ module BigBrother
         else
           @clusters[cluster_name] = cluster
 
-          if current_state.key?(cluster.fwmark.to_s)
+          if ipvs_state.key?(cluster.fwmark.to_s)
             BigBrother.logger.info("resuming previously running cluster from kernel state (#{cluster.fwmark})")
             cluster.start_monitoring!
           end

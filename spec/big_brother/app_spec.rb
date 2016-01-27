@@ -58,18 +58,15 @@ CombinedWeight: 300
         RESPONSE_BODY
       end
 
-      it "attempts to synchronize the node if it is not running" do
+      it "attempts to synchronize/monitor the cluster if its already running in the kernel" do
         @stub_executor.add_response("ipvsadm --save --numeric", <<-OUTPUT, 0)
 -A -f 1 -s wrr
 -a -f 1 -r 10.0.1.223:80 -i -w 1
 -a -f 1 -r 10.0.1.224:80 -i -w 1
--A -f 2 -s wrr
--a -f 2 -r 10.0.1.225:80 -i -w 1
         OUTPUT
         BigBrother.configure(TEST_CONFIG)
-        BigBrother.clusters['test'] = Factory.cluster(:name => 'test', :fwmark => 1)
 
-        get "/cluster/test"
+        get "/cluster/test1"
 
         last_response.status.should == 200
         last_response.body.should =~ /^Running: true$/
@@ -175,13 +172,7 @@ CombinedWeight: 300
       end
 
       it "attempts to synchronize the nodes in the cluster" do
-        @stub_executor.add_response("ipvsadm --save --numeric", <<-OUTPUT, 0)
--A -f 100 -s wrr
--a -f 100 -r 127.0.1.223:80 -i -w 1
--a -f 100 -r 127.0.1.224:80 -i -w 1
--A -f 2 -s wrr
--a -f 2 -r 10.0.1.225:80 -i -w 1
-      OUTPUT
+        BigBrother.ipvs.stub(:running_configuration).and_return({'100' => ['127.0.1.223', '127.0.1.224']})
         BigBrother.configure(TEST_CONFIG)
         first = Factory.node(:address => '127.0.1.223')
         second = Factory.node(:address => '127.0.1.225')

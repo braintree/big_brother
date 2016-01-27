@@ -31,14 +31,22 @@ describe BigBrother do
     run_in_reactor
     around(:each) do |spec|
       response_time = 1 #seconds
-      server = StubServer.new(<<HTTP, response_time, 9001, '127.0.0.1')
+      server1 = StubServer.new(<<HTTP, response_time, 9001, '127.0.0.1')
 HTTP/1.0 200 OK
 Connection: close
 
 Health: 50
 HTTP
+      server2 = StubServer.new(<<HTTP, response_time, 9002, '127.0.0.1')
+HTTP/1.0 200 OK
+Connection: close
+
+Health: 99
+HTTP
+
       spec.run
-      server.stop
+      server1.stop
+      server2.stop
     end
 
     it "reconfigures the clusters" do
@@ -173,8 +181,7 @@ EOF
       end
       BigBrother.reconfigure
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
-
-      @stub_executor.commands.last.should include("--weight 50")
+      BigBrother.clusters['test1'].nodes.first.weight.should == 50
     end
   end
 end
