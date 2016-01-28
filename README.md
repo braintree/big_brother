@@ -2,7 +2,7 @@
 
 [![Build Status](https://secure.travis-ci.org/braintree/big_brother.png)](http://travis-ci.org/braintree/big_brother)
 
-TODO: Write a gem description
+Big_brother is an application to manage the weights of servers on an IPVS load balancer.  It is designed to talk to litmus_paper (https://github.com/braintree/litmus_paper).
 
 ## Installation
 
