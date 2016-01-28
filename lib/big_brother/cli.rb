@@ -30,7 +30,7 @@ module BigBrother
 
         opt_parser.parse! args
 
-        options[:config] = '/usr/share/big_brother/config.ru'
+        options[:config] = File.expand_path("../../config.ru", File.dirname(__FILE__))
         options[:server] = 'thin-with-callbacks'
         options[:backend] = Thin::Backends::TcpServerWithCallbacks
         options
