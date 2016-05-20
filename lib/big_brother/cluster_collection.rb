@@ -19,7 +19,7 @@ module BigBrother
       new_clusters.each do |cluster_name, cluster|
         if @clusters.key?(cluster_name)
           current_cluster = @clusters[cluster_name]
-          current_cluster.stop_relay_fwmark if current_cluster.is_a?(BigBrother::ActiveActiveCluster) && !cluster.is_a?(BigBrother::ActiveActiveCluster)
+          current_cluster.stop_relay_fwmark if !current_cluster.is_a?(BigBrother::Cluster) && cluster.is_a?(BigBrother::Cluster)
 
           @clusters[cluster_name] = cluster.incorporate_state(@clusters[cluster_name])
         else
