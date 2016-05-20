@@ -22,10 +22,8 @@ module BigBrother
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
       BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
 
-      if active_node.nil?
-        BigBrother.ipvs.start_node(@fwmark, active_node.address, BigBrother::Node::INITIAL_WEIGHT)
-        BigBrother.ipvs.start_node(_relay_fwmark, active_node.address, BigBrother::Node::INITIAL_WEIGHT)
-      end
+      BigBrother.ipvs.start_node(@fwmark, active_node.address, BigBrother::Node::INITIAL_WEIGHT)
+      BigBrother.ipvs.start_node(_relay_fwmark, active_node.address, BigBrother::Node::INITIAL_WEIGHT)
 
       @monitored = true
     end
@@ -44,11 +42,11 @@ module BigBrother
         running_active_node_address = ipvs_state[fwmark.to_s].first
         if running_active_node_address != active_node.address
           BigBrother.ipvs.stop_node(fwmark, running_active_node_address)
-          if @local_nodes.map(&:address).include(running_active_node_address)
+          if @local_nodes.map(&:address).include?(running_active_node_address)
             BigBrother.ipvs.stop_node(_relay_fwmark, running_active_node_address)
           end
           BigBrother.ipvs.start_node(fwmark, active_node.address, active_node.weight)
-          if @local_nodes.include(active_node)
+          if @local_nodes.include?(active_node)
             BigBrother.ipvs.start_node(_relay_fwmark, active_node.address, active_node.weight)
           end
         end
@@ -61,12 +59,13 @@ module BigBrother
       proposed_remote_nodes = _fetch_remote_nodes.values.reject { |node| node.weight.zero? }
       proposed_local_nodes = @nodes.reject do |node|
         weight = node.monitor(self).to_i
+        _modify_current_active_node_weight(node, weight)
         node.weight = weight
         node.weight.zero?
       end
       proposed_active_node = (proposed_remote_nodes + proposed_local_nodes).sort.first
       if !proposed_active_node.nil?
-        if proposed_active_node == @current_active_node && proposed_active_node.weight != @current_active_node.weight
+        if proposed_active_node == @current_active_node
           _modify_current_active_node_weight(@current_active_node, proposed_active_node.weight)
         elsif proposed_active_node != @current_active_node
           _modify_active_node(@current_active_node, proposed_active_node)

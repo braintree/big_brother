@@ -28,7 +28,7 @@ describe BigBrother::ActivePassiveCluster do
       )
 
       cluster.start_monitoring!
-      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 1"
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 1")
     end
   end
 
