@@ -320,6 +320,7 @@ describe BigBrother::ActiveActiveCluster do
 
       cluster.synchronize!
 
+      puts @stub_executor.commands
       @stub_executor.commands.should be_empty
     end
 

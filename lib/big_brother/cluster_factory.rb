@@ -10,7 +10,8 @@ module BigBrother
     }
 
     def self.create_cluster(name, attributes)
-      CLUSTERS.fetch(attributes[:backend_mode], BigBrother::Cluster).new(name, attributes)
+      #return CLUSTERS.fetch(attributes[:backend_mode], BigBrother::Cluster).new(name, attributes)
+      Cluster.new(name, attributes)
     end
   end
 end

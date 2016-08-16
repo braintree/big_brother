@@ -42,6 +42,7 @@ describe BigBrother::ActivePassiveCluster do
       node2.stub(:monitor).and_return(92)
       node3.stub(:monitor).and_return(90)
 
+      cluster.start_monitoring!
       cluster.monitor_nodes
 
       cluster.active_node
@@ -59,6 +60,7 @@ describe BigBrother::ActivePassiveCluster do
       node2.stub(:monitor).and_return(92)
       node3.stub(:monitor).and_return(90)
 
+      cluster.start_monitoring!
       cluster.monitor_nodes
 
       cluster.monitor_nodes
@@ -78,6 +80,7 @@ describe BigBrother::ActivePassiveCluster do
       node2.stub(:monitor).and_return(92)
       node3.stub(:monitor).and_return(90)
 
+      cluster.start_monitoring!
       cluster.monitor_nodes
 
       cluster.active_node
@@ -93,6 +96,7 @@ describe BigBrother::ActivePassiveCluster do
       node2.stub(:monitor).and_return(0)
       node3.stub(:monitor).and_return(0)
 
+      cluster.start_monitoring!
       cluster.monitor_nodes
 
       cluster.active_node

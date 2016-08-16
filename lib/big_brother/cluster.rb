@@ -1,14 +1,25 @@
 module BigBrother
   class Cluster
-    attr_reader :fwmark, :scheduler, :check_interval, :nodes, :name, :ramp_up_time, :nagios, :backend_mode
+    attr_reader :backend_mode, :check_interval, :fwmark, :interpol_node, :local_nodes, :max_down_ticks, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler
 
     def initialize(name, attributes = {})
       @name = name
       @fwmark = attributes[:fwmark]
+      @cluster_mode = attributes.fetch(:backend_mode, "cluster")
+      @multi_datacenter = attributes.fetch(:multi_datacenter, @cluster_mode == "active_active")
       @scheduler = attributes[:scheduler]
       @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
-      @nodes = attributes.fetch(:nodes, []).map { |node_config| _coerce_node(node_config) }
+
+      nodes = attributes.fetch(:nodes, []).map { |node_config| _coerce_node(node_config) }
+      interpol_nodes, local_nodes = nodes.partition { |node| node.interpol? }
+      @nodes = @local_nodes = local_nodes
+      @interpol_node = interpol_nodes.first
+      @remote_nodes = []
+
+      @max_down_ticks = attributes.fetch(:max_down_ticks, 0)
+      @offset = attributes.fetch(:offset, 10_000)
+      @non_egress_locations = *attributes.fetch(:non_egress_locations, [])
       @last_check = Time.new(0)
       @up_file = BigBrother::StatusFile.new('up', @name)
       @down_file = BigBrother::StatusFile.new('down', @name)
@@ -43,18 +54,47 @@ module BigBrother
     end
 
     def start_monitoring!
-      BigBrother.logger.info "Starting monitoring on cluster #{to_s}"
+      BigBrother.logger.info "Starting monitoring on #{@cluster_mode} cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
-      @nodes.each do |node|
+
+      if @multi_datacenter
+        BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
+      end
+
+      _active_nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
+
+        if @multi_datacenter
+          BigBrother.ipvs.start_node(_relay_fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
+        end
       end
 
       @monitored = true
     end
 
+    def _active_nodes
+      if @backend_mode == "active_passive"
+        [@current_active_node ||= @nodes.sort.first]
+      else
+        @local_nodes
+      end
+    end
+
+    def active_node
+      if @backend_mode != "active_passive"
+        throw "There is only an active node in active/passive clusters!"
+      end
+
+      _active_nodes.first
+    end
+
     def stop_monitoring!
       BigBrother.logger.info "Stopping monitoring on cluster #{to_s}"
       BigBrother.ipvs.stop_cluster(@fwmark)
+
+      if @multi_datacenter
+        BigBrother.ipvs.stop_cluster(_relay_fwmark)
+      end
 
       @monitored = false
       @nodes.each(&:invalidate_weight!)
@@ -67,16 +107,35 @@ module BigBrother
 
     def synchronize!
       ipvs_state = BigBrother.ipvs.running_configuration
+
+      if @multi_datacenter
+        @remote_nodes = _fetch_remote_nodes.values if @remote_nodes == []
+      end
+
       if ipvs_state.has_key?(fwmark.to_s)
         resume_monitoring!
 
         running_nodes = ipvs_state[fwmark.to_s]
-        _remove_nodes(running_nodes - cluster_nodes)
-        _add_nodes(cluster_nodes - running_nodes)
+
+        if @backend_mode == "active_passive"
+          running_active_node_address = running_nodes.first
+          if running_active_node_address != active_node.address
+            _stop_node_by_address(running_active_node_address)
+            _start_node(active_node)
+          end
+        else
+          _remove_nodes(running_nodes - cluster_nodes)
+          _add_nodes(cluster_nodes - running_nodes, fwmark)
+          _add_nodes(local_cluster_nodes - running_nodes, _relay_fwmark)
+        end
       end
     end
 
     def cluster_nodes
+      (nodes + remote_nodes).map(&:address)
+    end
+
+    def local_cluster_nodes
       nodes.map(&:address)
     end
 
@@ -88,6 +147,7 @@ module BigBrother
     def monitor_nodes
       @last_check = Time.now
       return unless monitored?
+
       @nodes.each do |node|
         new_weight = node.monitor(self)
         if new_weight != node.weight
@@ -96,8 +156,51 @@ module BigBrother
         end
       end
 
+      fresh_remote_nodes = _fetch_remote_nodes
+
+      if @backend_mode == "active_passive"
+        proposed_active_node = (@nodes + fresh_remote_nodes.values).reject do |node|
+          node.weight.zero?
+        end.sort.first
+
+        if proposed_active_node && proposed_active_node != active_node
+          _stop_node(active_node)
+          _start_node(proposed_active_node)
+
+          @current_active_node = proposed_active_node
+          @remote_nodes = fresh_remote_nodes.values
+        end
+      end
+
+      remote_nodes.each do |node|
+        if new_node = fresh_remote_nodes[node.address]
+          next if new_node.weight == node.weight
+          BigBrother.ipvs.edit_node(fwmark, node.address, new_node.weight)
+          node.weight = new_node.weight
+        else
+          _adjust_or_remove_remote_node(node)
+        end
+      end
+
+      _add_remote_nodes(fresh_remote_nodes.values - remote_nodes)
+
       _check_downpage if has_downpage?
       _notify_nagios if nagios
+    end
+
+    def _start_node(node)
+      BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
+      BigBrother.ipvs.start_node(_relay_fwmark, node.address, node.weight)
+    end
+
+    def _stop_node(node)
+      BigBrother.ipvs.stop_node(fwmark, node.address)
+      BigBrother.ipvs.stop_node(_relay_fwmark, node.address)
+    end
+
+    def _stop_node_by_address(address)
+      BigBrother.ipvs.stop_node(fwmark, address)
+      BigBrother.ipvs.stop_node(_relay_fwmark, address)
     end
 
     def to_s
@@ -116,15 +219,41 @@ module BigBrother
       @down_file.exists?
     end
 
-    def incorporate_state(another_cluster)
+    def incorporate_state(cluster)
+      ipvs_state = BigBrother.ipvs.running_configuration
+      if ipvs_state[fwmark.to_s] && ipvs_state[_relay_fwmark.to_s].nil?
+        BigBrother.logger.info "Adding new remote relay cluster #{to_s}"
+        BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
+      end
+
+      if ipvs_state[fwmark.to_s] && ipvs_state.fetch(_relay_fwmark.to_s, []).empty?
+        _active_nodes.each do |node|
+          actual_node = cluster.find_node(node.address, node.port)
+          BigBrother.ipvs.start_node(_relay_fwmark, actual_node.address, actual_node.weight)
+        end
+      end
+
+      if cluster.multi_datacenter && !self.multi_datacenter
+        cluster.stop_relay_fwmark
+        @remote_nodes = []
+      end
+
       nodes.each do |node|
-        node.incorporate_state(another_cluster.find_node(node.address, node.port))
+        node.incorporate_state(cluster.find_node(node.address, node.port))
       end
 
       self
     end
 
-    def _add_nodes(addresses)
+    def stop_relay_fwmark
+      nodes.each do |node|
+        BigBrother.ipvs.stop_node(_relay_fwmark, node.address)
+      end
+
+      BigBrother.ipvs.stop_cluster(_relay_fwmark)
+    end
+
+    def _add_nodes(addresses, fwmark = @fwmark)
       addresses.each do |address|
         BigBrother.logger.info "Adding #{address} to cluster #{self}"
         BigBrother.ipvs.start_node(fwmark, address, 0)
@@ -168,11 +297,57 @@ module BigBrother
       addresses.each do |address|
         BigBrother.logger.info "Removing #{address} to cluster #{self}"
         BigBrother.ipvs.stop_node(fwmark, address)
+
+        if @multi_datacenter
+          BigBrother.ipvs.stop_node(_relay_fwmark, address)
+        end
       end
     end
 
     def _update_node(node, new_weight)
       BigBrother.ipvs.edit_node(fwmark, node.address, new_weight)
+
+      if @multi_datacenter
+        BigBrother.ipvs.edit_node(_relay_fwmark, node.address, new_weight)
+      end
+    end
+
+    def _relay_fwmark
+      fwmark + offset
+    end
+
+
+    def _fetch_remote_nodes
+      return {} if interpol_node.nil?
+
+      regular_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, fwmark)
+      relay_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, _relay_fwmark)
+
+      return {} if regular_remote_cluster.empty? || relay_remote_cluster.empty?
+
+      regular_remote_cluster.each_with_object({}) do |node, hsh|
+        next if self.non_egress_locations.include?(node['lb_source_location'])
+
+        hsh[node['lb_ip_address']] = BigBrother::Node.new(:address => node['lb_ip_address'], :weight => node['health'])
+      end
+    end
+
+    def _adjust_or_remove_remote_node(node)
+      if node.down_tick_count >= max_down_ticks
+        BigBrother.ipvs.stop_node(fwmark, node.address)
+        remote_nodes.delete(node)
+      else
+        BigBrother.ipvs.edit_node(fwmark, node.address, 0)
+        node.weight = 0
+        node.down_tick_count += 1
+      end
+    end
+
+    def _add_remote_nodes(nodes)
+      nodes.each do |node|
+        BigBrother.ipvs.start_node(fwmark, node.address, node.weight)
+        @remote_nodes << node
+      end
     end
   end
 end

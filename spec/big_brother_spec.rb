@@ -89,7 +89,6 @@ clusters:
 EOF
       end
       BigBrother.reconfigure
-      BigBrother.clusters['test1'].class.should == BigBrother::ActiveActiveCluster
       BigBrother.clusters['test1'].nodes.first.path.should == "/test/another/path"
     end
 
