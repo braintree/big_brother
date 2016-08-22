@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe BigBrother::ActivePassiveCluster do
+describe "active_passive clusters" do
   describe "#start_monitoring!" do
     it "starts only the node with the least priority in IPVS" do
       cluster = Factory.active_passive_cluster(

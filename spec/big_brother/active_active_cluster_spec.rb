@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe BigBrother::ActiveActiveCluster do
+describe "active_active clusters" do
   before { BigBrother::HealthFetcher.stub(:current_health).and_return(10) }
 
   describe '#start_monitoring!' do
