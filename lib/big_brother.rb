@@ -10,7 +10,6 @@ require 'sinatra/synchrony'
 
 require 'big_brother/app'
 require 'big_brother/cluster'
-require 'big_brother/cluster_factory'
 require 'big_brother/cluster_collection'
 require 'big_brother/configuration'
 require 'big_brother/health_fetcher'
