@@ -11,6 +11,8 @@
 # If you need to specify the .gemspec (eg there is more than one)
 #export DH_RUBY_GEMSPEC=gem.gemspec
 
+export DH_RUBY_IGNORE_TESTS=ruby1.8
+
 %:
 	dh $@ --buildsystem=ruby --with ruby
 

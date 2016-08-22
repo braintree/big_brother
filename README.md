@@ -4,6 +4,12 @@
 
 Big_brother is an application to manage the weights of servers on an IPVS load balancer.  It is designed to talk to litmus_paper (https://github.com/braintree/litmus_paper).
 
+## Build a deb
+
+- Update `debian/changelog`
+- Run `dpgk-buildpackage -uc -us`
+- [There is no step three](https://www.youtube.com/watch?v=6uXJlX50Lj8).
+
 ## Installation
 
 Add this line to your application's Gemfile:
