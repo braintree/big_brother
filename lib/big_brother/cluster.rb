@@ -1,12 +1,18 @@
 module BigBrother
   class Cluster
+    module Type
+      ActiveActive = "active_active"
+      ActivePassive = "active_passive"
+      Default = "cluster"
+    end
+
     attr_reader :backend_mode, :check_interval, :fwmark, :interpol_node, :local_nodes, :max_down_ticks, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler
 
     def initialize(name, attributes = {})
       @name = name
       @fwmark = attributes[:fwmark]
-      @cluster_mode = attributes.fetch(:backend_mode, "cluster")
-      @multi_datacenter = attributes.fetch(:multi_datacenter, @cluster_mode == "active_active")
+      @cluster_mode = attributes.fetch(:backend_mode, Type::Default)
+      @multi_datacenter = attributes.fetch(:multi_datacenter, @cluster_mode == Type::ActiveActive)
       @scheduler = attributes[:scheduler]
       @check_interval = attributes.fetch(:check_interval, 1)
       @monitored = false
@@ -27,6 +33,14 @@ module BigBrother
       @has_downpage = attributes[:has_downpage]
       @nagios = attributes[:nagios]
       @backend_mode = attributes[:backend_mode]
+    end
+
+    def active_passive?
+      @backend_mode == Type::ActivePassive
+    end
+
+    def active_active?
+      @backend_mode == Type::ActiveActive
     end
 
     def _coerce_node(node_config)
@@ -73,7 +87,7 @@ module BigBrother
     end
 
     def _active_nodes
-      if @backend_mode == "active_passive"
+      if active_passive?
         [@current_active_node ||= @nodes.sort.first]
       else
         @local_nodes
@@ -81,7 +95,7 @@ module BigBrother
     end
 
     def active_node
-      if @backend_mode != "active_passive"
+      if !active_passive?
         throw "There is only an active node in active/passive clusters!"
       end
 
@@ -117,7 +131,7 @@ module BigBrother
 
         running_nodes = ipvs_state[fwmark.to_s]
 
-        if @backend_mode == "active_passive"
+        if active_passive?
           running_active_node_address = running_nodes.first
           if running_active_node_address != active_node.address
             _stop_node_by_address(running_active_node_address)
@@ -158,7 +172,7 @@ module BigBrother
 
       fresh_remote_nodes = _fetch_remote_nodes
 
-      if @backend_mode == "active_passive"
+      if active_passive?
         proposed_active_node = (@nodes + fresh_remote_nodes.values).reject do |node|
           node.weight.zero?
         end.sort.first

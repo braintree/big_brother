@@ -12,7 +12,8 @@ module BigBrother
       configured_clusters.inject({}) do |clusters, cluster|
         cluster_details = _apply_defaults(defaults, cluster)
         cluster_name    = cluster.fetch("cluster_name")
-        clusters.merge(cluster_name => BigBrother::ClusterFactory.create_cluster(cluster_name, _deeply_symbolize_keys(cluster_details)))
+        #clusters.merge(cluster_name => BigBrother::ClusterFactory.create_cluster(cluster_name, _deeply_symbolize_keys(cluster_details)))
+        clusters.merge( cluster_name => Cluster.new(cluster_name, _deeply_symbolize_keys(cluster_details)))
       end
     end
 
