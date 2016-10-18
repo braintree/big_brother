@@ -83,6 +83,10 @@ module BigBrother
         end
       end
 
+      @remote_nodes.each do |node|
+        BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
+      end
+
       @monitored = true
     end
 
