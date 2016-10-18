@@ -1,3 +1,9 @@
+big-brother (0.8.8.1-1) stable; urgency=low
+
+  * Add remote nodes in start_monitoring
+
+ -- Jesse Hathaway <code@getbraintree.com>  Tue, 18 Oct 2016 20:34:36 +0000
+
 big-brother (0.8.8-1) stable; urgency=low
 
   * Automatically restore watched sessions on start
