@@ -21,6 +21,9 @@ module BigBrother
         BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
         BigBrother.ipvs.start_node(_relay_fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
       end
+      remote_nodes.each do |node|
+        BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
+      end
 
       @monitored = true
     end
