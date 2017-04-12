@@ -1,3 +1,10 @@
+big-brother (0.9.1-1) unstable; urgency=low
+
+  * Start remote nodes in synchronize! - This fixes a bug with AA clusters
+    with a single backend
+
+ -- Stephen Gelman <stephen.gelman@braintreepayments.com>  Wed, 12 Apr 2017 16:41:51 +0000
+
 big-brother (0.9.0-1) unstable; urgency=low
 
   * Merge active-active and active-passive clusters into one cluster type,
