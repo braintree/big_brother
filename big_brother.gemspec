@@ -25,6 +25,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "em-resolv-replace", "~> 1.1"
   gem.add_dependency "em-syslog",         "~> 0.0.2"
   gem.add_dependency "kwalify",           "~> 0.7.2"
+  gem.add_dependency "addressable",       "~> 2.4.0"
 
   gem.add_development_dependency "rspec",       "~> 2.9.0"
   gem.add_development_dependency "rack-test",   "~> 0.6.1"
