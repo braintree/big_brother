@@ -49,6 +49,31 @@ HTTP
   end
 
   describe "#interpol_status" do
+    it "works with multiple interpol nodes and returns data from one" do
+      StubServer.new(<<-HTTP, 0, 8081)
+HTTP/1.0 200 OK
+Connection: close
+
+[{"aggregated_health":0,"count":1,"lb_ip_address":"load1.stq","lb_url":"http://load1.stq:80/lvs.json","health":0}]
+HTTP
+      StubServer.new(<<-HTTP, 0, 8082)
+HTTP/1.0 200 OK
+Connection: close
+
+[{"aggregated_health":0,"count":1,"lb_ip_address":"load1.stq","lb_url":"http://load1.stq:80/lvs.json","health":0}]
+HTTP
+      BigBrother::HealthFetcher.interpol_status(
+        [
+          Factory.node(:address => "127.0.0.1", :port => 8083, :interpol => true, :path => '/fwmark'),
+          Factory.node(:address => "127.0.0.1", :port => 8081, :interpol => true, :path => '/fwmark'),
+          Factory.node(:address => "127.0.0.1", :port => 8082, :interpol => true, :path => '/fwmark'),
+        ],
+        'test'
+      ).should == [
+        {"aggregated_health" => 0,"count" => 1,"lb_ip_address" => "load1.stq","lb_url" => "http://load1.stq:80/lvs.json","health" => 0}
+      ]
+    end
+
     it "returns nodes as a list" do
       StubServer.new(<<-HTTP)
 HTTP/1.0 200 OK

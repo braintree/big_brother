@@ -79,7 +79,7 @@ clusters:
       clusters['test1'].nodes[1].port.should == 9002
       clusters['test1'].nodes[1].path.should == '/test/valid'
 
-      clusters['test4'].interpol_node.should be_interpol
+      clusters['test4'].interpol_nodes.first.should be_interpol
     end
 
     it 'allows a default cluster configuration under the global config key' do

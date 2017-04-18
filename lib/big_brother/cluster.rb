@@ -6,7 +6,7 @@ module BigBrother
       Default = "cluster"
     end
 
-    attr_reader :backend_mode, :check_interval, :fwmark, :interpol_node, :local_nodes, :max_down_ticks, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler
+    attr_reader :backend_mode, :check_interval, :fwmark, :interpol_nodes, :local_nodes, :max_down_ticks, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler
 
     def initialize(name, attributes = {})
       @name = name
@@ -20,7 +20,7 @@ module BigBrother
       nodes = attributes.fetch(:nodes, []).map { |node_config| _coerce_node(node_config) }
       interpol_nodes, local_nodes = nodes.partition { |node| node.interpol? }
       @nodes = @local_nodes = local_nodes
-      @interpol_node = interpol_nodes.first
+      @interpol_nodes = interpol_nodes
       @remote_nodes = []
 
       @max_down_ticks = attributes.fetch(:max_down_ticks, 0)
@@ -336,10 +336,10 @@ module BigBrother
 
 
     def _fetch_remote_nodes
-      return {} if interpol_node.nil?
+      return {} if interpol_nodes.empty?
 
-      regular_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, fwmark)
-      relay_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_node, _relay_fwmark)
+      regular_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_nodes, fwmark)
+      relay_remote_cluster = BigBrother::HealthFetcher.interpol_status(interpol_nodes, _relay_fwmark)
 
       return {} if regular_remote_cluster.empty? || relay_remote_cluster.empty?
 
