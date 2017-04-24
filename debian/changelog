@@ -1,3 +1,9 @@
+big-brother (0.9.2-2) UNRELEASED; urgency=low
+
+  * Fix init script
+
+ -- Stephen Gelman <stephen.gelman@braintreepayments.com>  Mon, 24 Apr 2017 18:27:54 +0000
+
 big-brother (0.9.2-1) unstable; urgency=low
 
   * Add support for multiple interpol nodes
