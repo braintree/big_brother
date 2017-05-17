@@ -1,4 +1,10 @@
-big-brother (0.9.2-2) UNRELEASED; urgency=low
+big-brother (0.9.3) UNRELEASED; urgency=low
+
+  * Set default cluster type to be ActiveActive
+
+ -- Katy Exline <katy@braintreepayments.com>  Wed, 17 May 2017 15:42:09 +0000
+
+big-brother (0.9.2-2) unstable; urgency=low
 
   * Fix init script
 
