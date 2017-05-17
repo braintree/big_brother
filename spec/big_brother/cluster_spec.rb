@@ -33,7 +33,7 @@ describe BigBrother::Cluster do
 
     it "invalidates recorded weights, so it properly updates after a stop/start" do
       node = Factory.node(:address => '127.0.0.1')
-      cluster = Factory.cluster(:fwmark => '100', :nodes => [node])
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
       cluster.monitor_nodes
 
