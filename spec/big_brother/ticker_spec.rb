@@ -45,7 +45,7 @@ describe BigBrother::Ticker do
         BigBrother::Ticker.tick
         BigBrother::Ticker.tick
 
-        @stub_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74"]
+        @stub_executor.commands.should == ["ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 74", "ipvsadm --edit-server --fwmark-service 10100 --real-server 127.0.0.1 --ipip --weight 74"]
       end
     end
 

@@ -59,7 +59,7 @@ describe BigBrother::Cluster do
   describe "#monitor_nodes" do
     it "does not run multiple ipvsadm commands if the health does not change" do
       node = Factory.node(:address => '127.0.0.1')
-      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster = Factory.active_passive_cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
       @stub_executor.commands.clear
       BigBrother::HealthFetcher.stub(:current_health).and_return(56)
@@ -70,7 +70,7 @@ describe BigBrother::Cluster do
 
     it "will run multiple ipvsadm commands if the health does change" do
       node = Factory.node(:address => '127.0.0.1')
-      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster = Factory.active_passive_cluster(:fwmark => 100, :nodes => [node])
       cluster.start_monitoring!
       @stub_executor.commands.clear
 
@@ -279,11 +279,11 @@ describe BigBrother::Cluster do
 
     it "removes nodes that are no longer part of the cluster" do
       BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '127.0.1.1']})
-      cluster = Factory.cluster(:fwmark => 1, :nodes => [Factory.node(:address => '127.0.0.1')])
+      cluster = Factory.active_active_cluster(:fwmark => 1, :nodes => [Factory.node(:address => '127.0.0.1')])
 
       cluster.synchronize!
 
-      @stub_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1"
+      @stub_executor.commands.should == ["ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1", "ipvsadm --delete-server --fwmark-service 10001 --real-server 127.0.1.1"]
     end
 
     it "adds new nodes to the cluster" do

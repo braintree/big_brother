@@ -3,7 +3,7 @@ module BigBrother
     module Type
       ActiveActive = "active_active"
       ActivePassive = "active_passive"
-      Default = "cluster"
+      Default = ActiveActive
     end
 
     attr_reader :backend_mode, :check_interval, :fwmark, :interpol_nodes, :local_nodes, :max_down_ticks, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler

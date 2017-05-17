@@ -33,7 +33,7 @@ describe BigBrother::ClusterCollection do
 
       existing_cluster = Factory.active_active_cluster(:name => 'existing_cluster')
       collection['existing_cluster'] = existing_cluster
-      cluster_from_config = Factory.cluster(:name => 'existing_cluster')
+      cluster_from_config = Factory.active_passive_cluster(:name => 'existing_cluster')
 
       existing_cluster.should_receive(:stop_relay_fwmark)
 
