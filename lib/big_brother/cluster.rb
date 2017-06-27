@@ -237,27 +237,35 @@ module BigBrother
       @down_file.exists?
     end
 
-    def incorporate_state(cluster)
+    def incorporate_state(original_cluster)
       ipvs_state = BigBrother.ipvs.running_configuration
       if ipvs_state[fwmark.to_s] && ipvs_state[_relay_fwmark.to_s].nil?
         BigBrother.logger.info "Adding new remote relay cluster #{to_s}"
         BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       end
 
+      (nodes - original_cluster.nodes).each do |added_node|
+        _start_node(added_node)
+      end
+
+      (original_cluster.nodes - nodes).each do |removed_node|
+        original_cluster._stop_node(removed_node)
+      end
+
       if ipvs_state[fwmark.to_s] && ipvs_state.fetch(_relay_fwmark.to_s, []).empty?
         _active_nodes.each do |node|
-          actual_node = cluster.find_node(node.address, node.port)
+          actual_node = find_node(node.address, node.port)
           BigBrother.ipvs.start_node(_relay_fwmark, actual_node.address, actual_node.weight)
         end
       end
 
-      if cluster.multi_datacenter && !self.multi_datacenter
-        cluster.stop_relay_fwmark
+      if original_cluster.multi_datacenter && !self.multi_datacenter
+        original_cluster.stop_relay_fwmark
         @remote_nodes = []
       end
 
       nodes.each do |node|
-        node.incorporate_state(cluster.find_node(node.address, node.port))
+        node.incorporate_state(original_cluster.find_node(node.address, node.port))
       end
 
       self
