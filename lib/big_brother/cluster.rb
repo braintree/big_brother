@@ -252,6 +252,10 @@ module BigBrother
         original_cluster._stop_node(removed_node)
       end
 
+      (nodes & original_cluster.nodes).each do |node|
+        node.incorporate_state(original_cluster.find_node(node.address, node.port))
+      end
+
       if ipvs_state[fwmark.to_s] && ipvs_state.fetch(_relay_fwmark.to_s, []).empty?
         _active_nodes.each do |node|
           actual_node = find_node(node.address, node.port)
@@ -262,10 +266,6 @@ module BigBrother
       if original_cluster.multi_datacenter && !self.multi_datacenter
         original_cluster.stop_relay_fwmark
         @remote_nodes = []
-      end
-
-      nodes.each do |node|
-        node.incorporate_state(original_cluster.find_node(node.address, node.port))
       end
 
       self
