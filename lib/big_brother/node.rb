@@ -37,6 +37,10 @@ module BigBrother
       @interpol
     end
 
+    def to_s
+      "#{@address}:#{@port}"
+    end
+
     def ==(other)
       address == other.address && port == other.port
     end
