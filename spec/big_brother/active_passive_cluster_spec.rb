@@ -173,4 +173,25 @@ describe "active_passive clusters" do
       cluster.active_node.address.should == '127.0.1.1'
     end
   end
+
+  describe "#incorporate_state" do
+    it "does not start or stop the passive nodes when changing the passive node" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+
+      active_node = Factory.node(:address => '127.0.0.1', :priority => 0)
+      original_passive_node = Factory.node(:address => '127.0.0.2', :priority => 50)
+      original_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [active_node, original_passive_node])
+
+      new_passive_node = Factory.node(:address => '127.0.0.3', :priority => 50)
+      new_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [active_node, new_passive_node])
+
+      new_cluster.should_receive(:_start_node).with(original_passive_node).never
+      new_cluster.should_receive(:_start_node).with(new_passive_node).never
+      new_cluster.should_receive(:_stop_node).with(original_passive_node).never
+      new_cluster.should_receive(:_stop_node).with(new_passive_node).never
+
+      retval = new_cluster.incorporate_state(original_cluster)
+      retval.nodes.should == [active_node, new_passive_node]
+    end
+  end
 end
