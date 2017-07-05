@@ -1,13 +1,13 @@
 # BigBrother
 
-[![Build Status](https://secure.travis-ci.org/braintree/big_brother.png)](http://travis-ci.org/braintree/big_brother)
+[![Build Status](https://secure.travis-ci.org/braintree/big_brother.png)](https://travis-ci.org/braintree/big_brother.svg?branch=master)
 
 Big_brother is an application to manage the weights of servers on an IPVS load balancer.  It is designed to talk to litmus_paper (https://github.com/braintree/litmus_paper).
 
 ## Build a deb
 
 - Update `debian/changelog`
-- Run `dpgk-buildpackage -uc -us`
+- Run `dpkg-buildpackage -uc -us`
 - [There is no step three](https://www.youtube.com/watch?v=6uXJlX50Lj8).
 
 ## Installation
