@@ -16,18 +16,18 @@ module BigBrother
 
       ipvs_state = BigBrother.ipvs.running_configuration
 
-      new_clusters.each do |cluster_name, cluster|
+      new_clusters.each do |cluster_name, new_cluster|
         if @clusters.key?(cluster_name)
           current_cluster = @clusters[cluster_name]
-          current_cluster.stop_relay_fwmark if !current_cluster.instance_of?(BigBrother::Cluster) && cluster.instance_of?(BigBrother::Cluster)
+          current_cluster.stop_relay_fwmark if !current_cluster.instance_of?(BigBrother::Cluster) && new_cluster.instance_of?(BigBrother::Cluster)
 
-          @clusters[cluster_name] = cluster.incorporate_state(@clusters[cluster_name])
+          @clusters[cluster_name] = new_cluster.incorporate_state(@clusters[cluster_name])
         else
-          @clusters[cluster_name] = cluster
+          @clusters[cluster_name] = new_cluster
 
-          if ipvs_state.key?(cluster.fwmark.to_s)
-            BigBrother.logger.info("resuming previously running cluster from kernel state (#{cluster.fwmark})")
-            cluster.start_monitoring!
+          if ipvs_state.key?(new_cluster.fwmark.to_s)
+            BigBrother.logger.info("resuming previously running cluster from kernel state (#{new_cluster.fwmark})")
+            new_cluster.start_monitoring!
           end
         end
       end
