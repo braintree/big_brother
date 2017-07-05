@@ -354,40 +354,6 @@ describe BigBrother::Cluster do
 
       retval.should == config_cluster
     end
-
-    it "adds and starts nodes" do
-      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
-
-      original_node1 = Factory.node(:address => '127.0.0.1')
-      original_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [original_node1])
-
-      new_node1 = Factory.node(:address => '127.0.0.1')
-      new_node2 = Factory.node(:address => '127.0.1.1')
-      new_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1, new_node2])
-
-      new_cluster.should_receive(:_start_node).with(new_node1).never
-      new_cluster.should_receive(:_start_node).with(new_node2).once
-
-      retval = new_cluster.incorporate_state(original_cluster)
-      retval.nodes.should == [new_node1, new_node2]
-    end
-
-    it "removes and stops nodes" do
-      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '127.0.1.1']})
-
-      original_node1 = Factory.node(:address => '127.0.0.1')
-      original_node2 = Factory.node(:address => '127.0.1.1')
-      original_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [original_node1, original_node2])
-
-      new_node1 = Factory.node(:address => '127.0.1.1')
-      new_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1])
-
-      original_cluster.should_receive(:_stop_node).with(original_node1).once
-      original_cluster.should_receive(:_stop_node).with(original_node2).never
-
-      retval = new_cluster.incorporate_state(original_cluster)
-      retval.nodes.should == [new_node1]
-    end
   end
 
   describe "combined_weight" do
