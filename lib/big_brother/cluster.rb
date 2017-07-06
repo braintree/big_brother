@@ -244,20 +244,24 @@ module BigBrother
         BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       end
 
-      if ipvs_state[fwmark.to_s] && ipvs_state.fetch(_relay_fwmark.to_s, []).empty?
-        _active_nodes.each do |node|
-          actual_node = original_cluster.find_node(node.address, node.port)
-          BigBrother.ipvs.start_node(_relay_fwmark, actual_node.address, actual_node.weight)
+      nodes.each do |node|
+        original_node = original_cluster.find_node(node.address, node.port)
+        node.incorporate_state(original_node)
+
+        if original_node.nil? && active_active?
+          _start_node(node)
+        elsif ipvs_state[fwmark.to_s] && ipvs_state.fetch(_relay_fwmark.to_s, []).empty?
+          BigBrother.ipvs.start_node(_relay_fwmark, node.address, node.weight)
         end
+      end
+
+      (original_cluster.nodes - nodes).each do |removed_node|
+        original_cluster._stop_node(removed_node)
       end
 
       if original_cluster.multi_datacenter && !self.multi_datacenter
         original_cluster.stop_relay_fwmark
         @remote_nodes = []
-      end
-
-      nodes.each do |node|
-        node.incorporate_state(original_cluster.find_node(node.address, node.port))
       end
 
       self
