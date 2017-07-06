@@ -36,11 +36,11 @@ module BigBrother
     end
 
     def active_passive?
-      @backend_mode == Type::ActivePassive
+      @cluster_mode == Type::ActivePassive
     end
 
     def active_active?
-      @backend_mode == Type::ActiveActive
+      @cluster_mode == Type::ActiveActive
     end
 
     def _coerce_node(node_config)
