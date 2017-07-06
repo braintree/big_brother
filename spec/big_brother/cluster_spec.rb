@@ -31,6 +31,17 @@ describe BigBrother::Cluster do
       @stub_executor.commands.should include("ipvsadm --delete-service --fwmark-service 100")
     end
 
+    it "invalidates recorded weights and sets them to 0 after a stop" do
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node])
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+
+      cluster.stop_monitoring!
+
+      node.weight.should be_zero
+    end
+
     it "invalidates recorded weights, so it properly updates after a stop/start" do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node])

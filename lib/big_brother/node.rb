@@ -30,7 +30,7 @@ module BigBrother
     end
 
     def invalidate_weight!
-      @weight = nil
+      @weight = 0
     end
 
     def interpol?

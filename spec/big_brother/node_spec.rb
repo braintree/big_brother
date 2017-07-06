@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 describe BigBrother::Node do
+  describe "#invalidate_weight!" do
+    it "sets the weight to zero" do
+      node = Factory.node(:address => '127.0.0.1', :weight => 90)
+      node.invalidate_weight!
+
+      node.weight.should be_zero
+    end
+  end
 
   describe "#monitor" do
     it "a node's health should increase linearly over the specified ramp up time" do
