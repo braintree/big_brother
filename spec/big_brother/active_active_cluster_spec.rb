@@ -433,7 +433,7 @@ describe "active_active clusters" do
 
       new_node1 = Factory.node(:address => '127.0.0.1')
       new_node2 = Factory.node(:address => '127.0.1.1')
-      new_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1, new_node2])
+      new_cluster = Factory.active_active_cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1, new_node2])
 
       new_cluster.should_receive(:_start_node).with(new_node1).never
       new_cluster.should_receive(:_start_node).with(new_node2).once

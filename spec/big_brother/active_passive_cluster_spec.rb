@@ -180,10 +180,10 @@ describe "active_passive clusters" do
 
       active_node = Factory.node(:address => '127.0.0.1', :priority => 0)
       original_passive_node = Factory.node(:address => '127.0.0.2', :priority => 50)
-      original_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [active_node, original_passive_node])
+      original_cluster = Factory.active_passive_cluster(:name => 'test', :fwmark => 1, :nodes => [active_node, original_passive_node])
 
       new_passive_node = Factory.node(:address => '127.0.0.3', :priority => 50)
-      new_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [active_node, new_passive_node])
+      new_cluster = Factory.active_passive_cluster(:name => 'test', :fwmark => 1, :nodes => [active_node, new_passive_node])
 
       new_cluster.should_receive(:_start_node).with(original_passive_node).never
       new_cluster.should_receive(:_start_node).with(new_passive_node).never
