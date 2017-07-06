@@ -11,7 +11,7 @@ module BigBrother
     def initialize(name, attributes = {})
       @name = name
       @fwmark = attributes[:fwmark]
-      @cluster_mode = attributes.fetch(:backend_mode, Type::Default)
+      @cluster_mode = @backend_mode = attributes.fetch(:backend_mode, Type::Default)
       @multi_datacenter = attributes.fetch(:multi_datacenter, @cluster_mode == Type::ActiveActive)
       @scheduler = attributes[:scheduler]
       @check_interval = attributes.fetch(:check_interval, 1)
@@ -32,7 +32,6 @@ module BigBrother
       @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
       @has_downpage = attributes[:has_downpage]
       @nagios = attributes[:nagios]
-      @backend_mode = attributes[:backend_mode]
     end
 
     def active_passive?
