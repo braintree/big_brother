@@ -193,5 +193,39 @@ describe "active_passive clusters" do
       retval = new_cluster.incorporate_state(original_cluster)
       retval.nodes.should == [active_node, new_passive_node]
     end
+
+    it "does not start a new active node" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+
+      original_active_node = Factory.node(:address => '127.0.0.1', :priority => 0)
+      original_passive_node = Factory.node(:address => '127.0.0.2', :priority => 50)
+      original_cluster = Factory.active_passive_cluster(:name => 'test', :fwmark => 1, :nodes => [original_active_node, original_passive_node])
+
+      new_active_node = Factory.node(:address => '127.0.0.3', :priority => 0)
+      new_passive_node = Factory.node(:address => '127.0.0.2', :priority => 50)
+      new_cluster = Factory.active_passive_cluster(:name => 'test', :fwmark => 1, :nodes => [new_active_node, new_passive_node])
+
+      new_cluster.should_receive(:_start_node).with(original_passive_node).never
+      new_cluster.should_receive(:_start_node).with(new_passive_node).never
+      new_cluster.should_receive(:_start_node).with(original_active_node).never
+      new_cluster.should_receive(:_start_node).with(new_active_node).never
+
+      retval = new_cluster.incorporate_state(original_cluster)
+      retval.nodes.should == [new_active_node, new_passive_node]
+    end
+
+    it "incorporates the node state from nodes of the existing cluster" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+
+      original_node1 = Factory.node(:address => '127.0.0.1', :weight => 100)
+      original_cluster = Factory.active_passive_cluster(:name => 'test', :fwmark => 1, :nodes => [original_node1])
+
+      new_node1 = Factory.node(:address => '127.0.0.1', :weight => 50)
+      new_cluster = Factory.active_passive_cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1])
+
+      retval = new_cluster.incorporate_state(original_cluster)
+      retval.nodes.first.start_time.should == original_node1.start_time
+      retval.nodes.first.weight.should == 100
+    end
   end
 end

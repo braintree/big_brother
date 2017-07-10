@@ -415,7 +415,7 @@ describe "active_active clusters" do
       @stub_executor.commands.should == ["ipvsadm --add-service --fwmark-service 10001 --scheduler wrr", "ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.0.1 --ipip --weight 80", "ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.1.1 --ipip --weight 100"]
     end
 
-    it "does not starts a relay_fwmark when the cluster is not running" do
+    it "does not start a relay_fwmark when the cluster isn't running" do
       BigBrother.ipvs.stub(:running_configuration).and_return({'2' => ['127.0.0.1']})
       active_active_cluster = Factory.active_active_cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1'), Factory.node(:address => "127.0.1.1"), Factory.node(:address => "127.1.1.1", :interpol => true)])
       cluster = Factory.cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1', :weight => 80), Factory.node(:address => "127.0.1.1", :weight => 100)])
@@ -423,6 +423,20 @@ describe "active_active clusters" do
       active_active_cluster.incorporate_state(cluster)
 
       @stub_executor.commands.should be_empty
+    end
+
+    it "incorporates the node state from nodes of the existing cluster" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+
+      original_node1 = Factory.node(:address => '127.0.0.1', :weight => 100)
+      original_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [original_node1])
+
+      new_node1 = Factory.node(:address => '127.0.0.1', :weight => 50)
+      new_cluster = Factory.active_active_cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1])
+
+      retval = new_cluster.incorporate_state(original_cluster)
+      retval.nodes.first.start_time.should == original_node1.start_time
+      retval.nodes.first.weight.should == 100
     end
 
     it "adds and starts nodes" do
