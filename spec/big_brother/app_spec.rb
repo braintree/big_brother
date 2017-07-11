@@ -6,6 +6,11 @@ module BigBrother
       App
     end
 
+    def tick
+      BigBrother::Ticker.instance_variable_set(:@outstanding_ticks, 0)
+      BigBrother::Ticker.tick
+    end
+
     describe "/" do
       it "returns the list of configured clusters and their status" do
         BigBrother::HealthFetcher.stub(:current_health).and_return(99)
@@ -17,6 +22,8 @@ module BigBrother
         )
         BigBrother.clusters['three'].start_monitoring!
         BigBrother.clusters['four'] = Factory.cluster(:name => 'four', :fwmark => 4)
+
+        tick
 
         get "/"
         last_response.status.should == 200
@@ -39,6 +46,7 @@ module BigBrother
       end
 
       it "returns 'Running: true' and the combined weight when the cluster is running" do
+        BigBrother::HealthFetcher.stub(:current_health).and_return(100)
         BigBrother.clusters['test'] = Factory.cluster(
           :name => 'test',
           :nodes => [
@@ -47,8 +55,8 @@ module BigBrother
             Factory.node,
           ]
         )
-
         put "/cluster/test"
+        tick
         get "/cluster/test"
 
         last_response.status.should == 200
@@ -90,6 +98,7 @@ CombinedWeight: 300
       end
 
       it "returns 'Running: true' and the combined weight when the cluster is running" do
+        BigBrother::HealthFetcher.stub(:current_health).and_return(100)
         BigBrother.clusters['test'] = Factory.cluster(
           :name => 'test',
           :nodes => [
@@ -100,6 +109,7 @@ CombinedWeight: 300
         )
 
         put "/cluster/test"
+        tick
         get "/cluster/test/status"
 
         last_response.status.should == 200

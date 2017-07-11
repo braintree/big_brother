@@ -10,6 +10,15 @@ describe BigBrother::Node do
     end
   end
 
+  describe "#initialize_weight!" do
+    it "sets the weight to the node class' initial weight value" do
+      node = Factory.node(:address => '127.0.0.1', :weight => 90)
+      node.initialize_weight!
+
+      node.weight.should == BigBrother::Node::INITIAL_WEIGHT
+    end
+  end
+
   describe "#monitor" do
     it "a node's health should increase linearly over the specified ramp up time" do
       BigBrother::HealthFetcher.stub(:current_health).and_return(100)

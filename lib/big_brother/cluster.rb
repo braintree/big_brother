@@ -67,6 +67,11 @@ module BigBrother
     end
 
     def start_monitoring!
+      ## NOTE: We set the node weights to match the initial IPVS weight, to ensure node weights will be updated
+      ## correctly with the measured health on the next round of monitoring. By design, we have decided it
+      ## is preferable to temporarily misdirect to a backend that may be down than wait for initial health
+      ## checks to complete.
+
       BigBrother.logger.info "Starting monitoring on #{@cluster_mode} cluster #{to_s}"
       BigBrother.ipvs.start_cluster(@fwmark, @scheduler)
 
@@ -80,10 +85,14 @@ module BigBrother
         if @multi_datacenter
           BigBrother.ipvs.start_node(_relay_fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
         end
+
+        node.initialize_weight!
       end
 
       @remote_nodes.each do |node|
         BigBrother.ipvs.start_node(@fwmark, node.address, BigBrother::Node::INITIAL_WEIGHT)
+
+        node.initialize_weight!
       end
 
       @monitored = true

@@ -33,6 +33,10 @@ module BigBrother
       @weight = 0
     end
 
+    def initialize_weight!
+      @weight = INITIAL_WEIGHT
+    end
+
     def interpol?
       @interpol
     end

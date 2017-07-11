@@ -56,6 +56,21 @@ describe BigBrother::Cluster do
 
       @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 15")
     end
+
+    it "it properly updates after a stop/start even if set to 0" do
+      node = Factory.node(:address => '127.0.0.1')
+      cluster = Factory.cluster(:fwmark => 100, :nodes => [node], :weight => 0)
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+
+      cluster.stop_monitoring!
+      cluster.start_monitoring!
+
+      BigBrother::HealthFetcher.stub(:current_health).and_return(0)
+      cluster.monitor_nodes
+
+      @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 0")
+    end
   end
 
   describe "#needs_check?" do
