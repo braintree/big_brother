@@ -254,7 +254,7 @@ module BigBrother
 
       _active_nodes.each do |node|
         original_node = original_cluster.find_node(node.address, node.port)
-        node.incorporate_state(original_node)
+        node.incorporate_state(original_node) unless original_node.nil?
 
         if original_node.nil? && active_active?
           _start_node(node)
