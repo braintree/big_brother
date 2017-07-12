@@ -57,7 +57,7 @@ describe BigBrother::Cluster do
       @stub_executor.commands.should include("ipvsadm --edit-server --fwmark-service 100 --real-server 127.0.0.1 --ipip --weight 15")
     end
 
-    it "it properly updates after a stop/start even if set to 0" do
+    it "properly updates after a stop/start even if measured health is 0" do
       node = Factory.node(:address => '127.0.0.1')
       cluster = Factory.cluster(:fwmark => 100, :nodes => [node], :weight => 0)
       cluster.start_monitoring!
@@ -381,7 +381,7 @@ describe BigBrother::Cluster do
       retval.should == config_cluster
     end
 
-    it "Stops the relay fwmark if shifting from multi_datacenter" do
+    it "stops the relay fwmark if shifting from multi_datacenter" do
       original_cluster = Factory.active_active_cluster(:multi_datacenter => true, :nodes => [Factory.node(:address => '127.0.0.1')])
       new_cluster = Factory.active_active_cluster(:multi_datacenter => false, :nodes => [Factory.node(:address => '127.0.0.1')])
 
@@ -390,7 +390,7 @@ describe BigBrother::Cluster do
       new_cluster.incorporate_state(original_cluster)
     end
 
-    it "Removes remote nodes if shifting from multi_datacenter" do
+    it "removes remote nodes if shifting from multi_datacenter" do
       BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '172.27.1.3']})
       original_cluster = Factory.active_active_cluster(:multi_datacenter => true, :fwmark => 1, :nodes => [Factory.node(:address => '127.0.0.1')])
       original_cluster.instance_variable_set(:@remote_nodes, [Factory.node(:address => '172.27.1.3')])
