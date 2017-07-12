@@ -227,5 +227,15 @@ describe "active_passive clusters" do
       retval.nodes.first.start_time.should == original_node1.start_time
       retval.nodes.first.weight.should == 100
     end
+
+    it "does not start a relay fwmark for passive nodes" do
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+      active_passive_cluster = Factory.active_passive_cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1'), Factory.node(:address => "127.0.1.1"), Factory.node(:address => "127.1.1.1", :interpol => true)])
+      cluster = Factory.active_passive_cluster(:fwmark => 1, :offset => 10000, :nodes => [Factory.node(:address => '127.0.0.1', :weight => 90), Factory.node(:address => "127.0.1.1", :weight => 0), Factory.node(:address => "127.1.1.1", :interpol => true)])
+
+      active_passive_cluster.incorporate_state(cluster)
+
+      @stub_executor.commands.should == ["ipvsadm --add-service --fwmark-service 10001 --scheduler wrr", "ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.0.1 --ipip --weight 90"]
+    end
   end
 end

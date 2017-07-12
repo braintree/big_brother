@@ -252,7 +252,7 @@ module BigBrother
         BigBrother.ipvs.start_cluster(_relay_fwmark, @scheduler)
       end
 
-      nodes.each do |node|
+      _active_nodes.each do |node|
         original_node = original_cluster.find_node(node.address, node.port)
         node.incorporate_state(original_node)
 
