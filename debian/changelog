@@ -1,4 +1,11 @@
-big-brother (0.9.3-1) UNRELEASED; urgency=low
+big-brother (0.9.3-2) unstable; urgency=low
+
+  * Bump required version of gem2deb when building to ensure that the shebang
+    for /usr/bin/bigbro is /usr/bin/ruby instead of "/usr/bin/env ruby"
+
+ -- Stephen Gelman <stephen.gelman@braintreepayments.com>  Tue, 25 Jul 2017 20:12:54 +0000
+
+big-brother (0.9.3-1) unstable; urgency=low
 
   * Bugfix to prevent exception when node is added to an existing cluster
   * Bugfix to set node weights to zero when invalidating their weight
