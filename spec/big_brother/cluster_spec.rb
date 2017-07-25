@@ -381,6 +381,21 @@ describe BigBrother::Cluster do
       retval.should == config_cluster
     end
 
+    it "finds any new nodes from the provided cluster and adds them with a weight of 0" do
+      original_node1 = Factory.node(:address => '127.0.0.1')
+      original_cluster = Factory.cluster(:nodes => [original_node1])
+
+      config_node1 = Factory.node(:address => '127.0.0.1')
+      config_node2 = Factory.node(:address => '127.0.1.1', :weight => nil)
+
+      config_cluster = Factory.cluster(:nodes => [config_node1, config_node2])
+
+      retval = config_cluster.incorporate_state(original_cluster)
+
+      @stub_executor.commands.should include('ipvsadm --add-server --fwmark-service 100 --real-server 127.0.1.1 --ipip --weight 0')
+      retval.find_node(config_node2.address, config_node2.port).weight.should == 0
+    end
+
     it "stops the relay fwmark if shifting from multi_datacenter" do
       original_cluster = Factory.active_active_cluster(:multi_datacenter => true, :nodes => [Factory.node(:address => '127.0.0.1')])
       new_cluster = Factory.active_active_cluster(:multi_datacenter => false, :nodes => [Factory.node(:address => '127.0.0.1')])

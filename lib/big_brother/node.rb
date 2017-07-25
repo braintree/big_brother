@@ -10,7 +10,7 @@ module BigBrother
       @address = attributes[:address]
       @port = attributes[:port]
       @path = attributes[:path]
-      @weight = attributes[:weight]
+      @weight = attributes[:weight] || 0
       @start_time = attributes.fetch(:start_time, Time.now.to_i)
       @priority = attributes.fetch(:priority, 0)
       @interpol = attributes.fetch(:interpol, false)

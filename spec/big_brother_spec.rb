@@ -137,7 +137,7 @@ EOF
       BigBrother.clusters['test1'].nodes[0].start_time.should == start_time
       BigBrother.clusters['test1'].nodes[0].weight.should == weight
       BigBrother.clusters['test1'].nodes[1].start_time.should == 1345043700
-      BigBrother.clusters['test1'].nodes[1].weight.should be_nil
+      BigBrother.clusters['test1'].nodes[1].weight.should == 0
     end
 
     it "stops the ticker and reconfigures after it has finished all its ticks" do
