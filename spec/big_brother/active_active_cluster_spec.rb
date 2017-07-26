@@ -454,6 +454,9 @@ describe "active_active clusters" do
 
       @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
       @stub_executor.commands.should_not include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1")
+
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.1.1 --ipip --weight 100")
+      @stub_executor.commands.should_not include("ipvsadm --add-server --fwmark-service 10001 --real-server 127.0.0.1")
     end
 
     it "removes and stops nodes" do
@@ -471,6 +474,9 @@ describe "active_active clusters" do
 
       @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1")
       @stub_executor.commands.should_not include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1")
+
+      @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 10001 --real-server 127.0.0.1")
+      @stub_executor.commands.should_not include("ipvsadm --delete-server --fwmark-service 10001 --real-server 127.0.1.1")
     end
   end
 
