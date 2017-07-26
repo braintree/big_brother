@@ -440,7 +440,7 @@ describe "active_active clusters" do
     end
 
     it "adds and starts nodes" do
-      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1']})
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1'], '10001' => ['127.0.0.1']})
 
       original_node1 = Factory.node(:address => '127.0.0.1')
       original_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [original_node1])
@@ -449,15 +449,15 @@ describe "active_active clusters" do
       new_node2 = Factory.node(:address => '127.0.1.1')
       new_cluster = Factory.active_active_cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1, new_node2])
 
-      new_cluster.should_receive(:_start_node).with(new_node1).never
-      new_cluster.should_receive(:_start_node).with(new_node2).once
-
       retval = new_cluster.incorporate_state(original_cluster)
       retval.nodes.should == [new_node1, new_node2]
+
+      @stub_executor.commands.should include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.1.1 --ipip --weight 100")
+      @stub_executor.commands.should_not include("ipvsadm --add-server --fwmark-service 1 --real-server 127.0.0.1")
     end
 
     it "removes and stops nodes" do
-      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '127.0.1.1']})
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '127.0.1.1'], '10001' => ['127.0.0.1', '127.0.1.1']})
 
       original_node1 = Factory.node(:address => '127.0.0.1')
       original_node2 = Factory.node(:address => '127.0.1.1')
@@ -466,11 +466,11 @@ describe "active_active clusters" do
       new_node1 = Factory.node(:address => '127.0.1.1')
       new_cluster = Factory.cluster(:name => 'test', :fwmark => 1, :nodes => [new_node1])
 
-      original_cluster.should_receive(:_stop_node).with(original_node1).once
-      original_cluster.should_receive(:_stop_node).with(original_node2).never
-
       retval = new_cluster.incorporate_state(original_cluster)
       retval.nodes.should == [new_node1]
+
+      @stub_executor.commands.should include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1")
+      @stub_executor.commands.should_not include("ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.1.1")
     end
   end
 
