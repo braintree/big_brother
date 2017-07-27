@@ -1,3 +1,12 @@
+big-brother (0.9.4-1) UNRELEASED; urgency=low
+
+  * Updated the default weight of a node added to an existing cluster to 0.
+    It was previously nil.
+
+  * Refactored testing adding and removing nodes from existing clusters.
+
+ -- Randall Mason <randall.mason@getbraintreepayments.com>  Thu, 27 Jul 2017 15:27:50 +0000
+
 big-brother (0.9.3-2) unstable; urgency=low
 
   * Bump required version of gem2deb when building to ensure that the shebang
