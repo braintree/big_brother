@@ -6,6 +6,7 @@ Big_brother is an application to manage the weights of servers on an IPVS load b
 
 ## Build a deb
 
+- Requires gem2deb >=0.7.0
 - Update `debian/changelog`
 - Run `dpkg-buildpackage -uc -us`
 - [There is no step three](https://www.youtube.com/watch?v=6uXJlX50Lj8).
