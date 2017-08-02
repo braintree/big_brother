@@ -21,7 +21,7 @@ module BigBrother
           current_cluster = @clusters[cluster_name]
           current_cluster.stop_relay_fwmark if !current_cluster.instance_of?(BigBrother::Cluster) && new_cluster.instance_of?(BigBrother::Cluster)
 
-          @clusters[cluster_name] = new_cluster.incorporate_state(@clusters[cluster_name])
+          @clusters[cluster_name] = new_cluster.incorporate_state(current_cluster)
         else
           @clusters[cluster_name] = new_cluster
 
