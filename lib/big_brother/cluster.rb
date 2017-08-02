@@ -6,7 +6,7 @@ module BigBrother
       Default = ActiveActive
     end
 
-    attr_reader :backend_mode, :check_interval, :fwmark, :interpol_nodes, :local_nodes, :max_down_ticks, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler
+    attr_reader :backend_mode, :check_interval, :fwmark, :interpol_nodes, :local_nodes, :max_down_ticks, :monitored, :multi_datacenter, :nagios, :name, :nodes, :non_egress_locations, :offset, :ramp_up_time, :remote_nodes, :scheduler
 
     def initialize(name, attributes = {})
       @name = name
@@ -271,6 +271,8 @@ module BigBrother
         original_cluster.stop_relay_fwmark
         @remote_nodes = []
       end
+
+      @monitored = original_cluster.monitored
 
       self
     end

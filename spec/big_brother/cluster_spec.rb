@@ -381,6 +381,19 @@ describe BigBrother::Cluster do
       retval.should == config_cluster
     end
 
+    it "retains the monitored state from the original cluster" do
+      original_node1 = Factory.node(:address => '127.0.0.1')
+      original_cluster = Factory.cluster(:nodes => [original_node1])
+      original_cluster.stub(:monitored).and_return(true)
+
+      config_node1 = Factory.node(:address => '127.0.0.1')
+      config_cluster = Factory.cluster(:nodes => [config_node1])
+
+      retval = config_cluster.incorporate_state(original_cluster)
+
+      retval.monitored.should be_true
+    end
+
     it "finds any new nodes from the provided cluster and adds them with a weight of 0" do
       original_node1 = Factory.node(:address => '127.0.0.1')
       original_cluster = Factory.cluster(:nodes => [original_node1])
