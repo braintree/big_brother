@@ -1,3 +1,9 @@
+big-brother (0.9.5-2) unstable; urgency=low
+
+  * Version bump
+
+ -- Mark Rogers <mrogers1@buildw64.chi.braintreepayments.com>  Thu, 03 Aug 2017 20:42:35 +0000
+
 big-brother (0.9.5-1) unstable; urgency=low
 
   * Set a cluster's monitored state to the original cluster's when reloading
