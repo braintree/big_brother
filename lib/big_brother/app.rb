@@ -29,8 +29,26 @@ Stopped:
       _cluster_status
     end
 
+    get "/cluster/:name/status_detail" do |name|
+      _cluster_status_detail
+    end
+
     def _cluster_status
       [200, "Running: #{@cluster.monitored?}\nCombinedWeight: #{@cluster.combined_weight}\n"]
+    end
+
+    def _cluster_status_detail
+      status = {
+        "nodes" => Hash[
+                      @cluster.nodes.map do |node|
+                        [node.address, node.weight]
+                      end
+                    ],
+        "cluster" => @cluster.name,
+        "running" => @cluster.monitored?
+      }
+
+      [200, status.to_json]
     end
 
     put "/cluster/:name" do |name|

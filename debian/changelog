@@ -1,3 +1,10 @@
+big-brother (0.9.6-1) unstable; urgency=low
+
+  * Add status_detail route to report on node health
+  * Ensure Travis CI has an updated version of bundler
+
+ -- Tom Christiansen-Salameh <tomcs@buildw64.chi.braintreepayments.com>  Wed, 06 Sep 2017 12:55:40 +0000
+
 big-brother (0.9.5-2) unstable; urgency=low
 
   * Version bump

@@ -5,3 +5,5 @@ sudo: false
 notifications:
   email:
     - blue-ci-notifications@getbraintree.com
+before_install:
+  - gem update bundler
