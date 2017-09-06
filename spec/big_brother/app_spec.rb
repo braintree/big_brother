@@ -138,6 +138,46 @@ CombinedWeight: 300
       end
     end
 
+    describe "GET /cluster/:name/status_detail" do
+
+      def _check_status_detail(n_nodes, running, health_stub = 0)
+        BigBrother::HealthFetcher.stub(:current_health).and_return(health_stub)
+        BigBrother.clusters['test'] = Factory.cluster(
+          :name => 'test',
+          :nodes => (1..n_nodes).map { |n| Factory.node(:address => "127.0.0.#{n}") },
+        )
+
+        expected_output = {
+          "nodes"   => Hash[(1..n_nodes).map { |n| ["127.0.0.#{n}", health_stub] }],
+          "cluster" => "test",
+          "running" => running
+        }.to_json
+
+        put "/cluster/test"
+        tick
+        BigBrother.clusters['test'].stop_monitoring! unless running
+        get "/cluster/test/status_detail"
+
+        last_response.status.should == 200
+        last_response.body.should == expected_output
+      end
+
+
+      it "returns the correct node statuses for various cluster states" do
+        _check_status_detail(0, false)
+        _check_status_detail(3, false)
+        _check_status_detail(0, true)
+        _check_status_detail(3, true, 50)
+      end
+
+      it "returns a 404 http status when the cluster is not found" do
+        get "/cluster/not_found/status_detail"
+
+        last_response.status.should == 404
+      end
+    end
+
+
     describe "PUT /cluster/:name" do
       it "marks the cluster as monitored" do
         BigBrother.clusters['test'] = Factory.cluster(:name => 'test')
