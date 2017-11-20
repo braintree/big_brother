@@ -32,7 +32,7 @@ module BigBrother
           result = http
           if http.response_header.status == 200
             BigBrother.logger.debug("Request to #{url} was successful")
-            this.instance_variable_set(:@ended, true) #This halts the loop
+            EM.stop_event_loop
           end
           iter.next
         end
