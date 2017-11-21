@@ -17,13 +17,15 @@ module BigBrother
       end
 
       response = _first_interpol_response(urls)
-      if response
-        response.response_header.status == 200 ? JSON.parse(response.response) : []
+      if response && response.response_header.status == 200
+        begin
+          JSON.parse(response.response)
+        rescue JSON::ParserError
+          []
+        end
       else
         []
       end
-    rescue JSON::ParserError
-      []
     end
 
     def self._first_interpol_response(urls)
@@ -41,9 +43,6 @@ module BigBrother
         end
 
         http.errback do
-          if ! result
-            result = http
-          end
           iter.next
         end
       end
