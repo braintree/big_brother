@@ -17,7 +17,11 @@ module BigBrother
       end
 
       response = _first_interpol_response(urls)
-      response.response_header.status == 200 ? JSON.parse(response.response) : []
+      if response
+        response.response_header.status == 200 ? JSON.parse(response.response) : []
+      else
+        []
+      end
     rescue JSON::ParserError
       []
     end
@@ -29,16 +33,17 @@ module BigBrother
         http = EventMachine::HttpRequest.new(url, :connect_timeout => 2, :inactivity_timeout => 2).aget
         this = self
         http.callback do
-          result = http
           if http.response_header.status == 200
             BigBrother.logger.debug("Request to #{url} was successful")
-            EM.stop_event_loop
+            result = http
           end
           iter.next
         end
 
         http.errback do
-          result = http
+          if ! result
+            result = http
+          end
           iter.next
         end
       end
