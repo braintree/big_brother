@@ -17,14 +17,13 @@ module BigBrother
       end
 
       response = _first_interpol_response(urls)
-      if response && response.response_header.status == 200
+      return [] unless response
+      if response.response_header.status == 200
         begin
           JSON.parse(response.response)
         rescue JSON::ParserError
           []
         end
-      else
-        []
       end
     end
 
@@ -33,10 +32,12 @@ module BigBrother
       EM::Synchrony::Iterator.new(urls, urls.size).each do |url, iter|
         BigBrother.logger.debug("Fetching health from #{url}")
         http = EventMachine::HttpRequest.new(url, :connect_timeout => 2, :inactivity_timeout => 2).aget
+        this = self
         http.callback do
           if http.response_header.status == 200
             BigBrother.logger.debug("Request to #{url} was successful")
             result = http
+            this.instance_variable_set(:@ended, true) #This halts the loop
           end
           iter.next
         end
