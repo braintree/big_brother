@@ -17,9 +17,14 @@ module BigBrother
       end
 
       response = _first_interpol_response(urls)
-      response.response_header.status == 200 ? JSON.parse(response.response) : []
-    rescue JSON::ParserError
-      []
+      return [] unless response
+      if response.response_header.status == 200
+        begin
+          JSON.parse(response.response)
+        rescue JSON::ParserError
+          []
+        end
+      end
     end
 
     def self._first_interpol_response(urls)
@@ -29,16 +34,15 @@ module BigBrother
         http = EventMachine::HttpRequest.new(url, :connect_timeout => 2, :inactivity_timeout => 2).aget
         this = self
         http.callback do
-          result = http
           if http.response_header.status == 200
             BigBrother.logger.debug("Request to #{url} was successful")
+            result = http
             this.instance_variable_set(:@ended, true) #This halts the loop
           end
           iter.next
         end
 
         http.errback do
-          result = http
           iter.next
         end
       end
