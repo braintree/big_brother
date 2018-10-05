@@ -1,3 +1,9 @@
+big-brother (0.9.7-1) unstable; urgency=low
+
+  * Stop event loop when a healthy node has been found
+
+ -- Stephen Gelman <stephen@braintreepayments.com>  Fri, 05 Oct 2018 19:47:53 +0000
+
 big-brother (0.9.6-1) unstable; urgency=low
 
   * Add status_detail route to report on node health
