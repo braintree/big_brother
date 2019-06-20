@@ -109,9 +109,9 @@ describe "active_passive clusters" do
     it "marks the cluster as monitored" do
       cluster = Factory.cluster
 
-      cluster.monitored?.should be_false
+      cluster.monitored?.should be false
       cluster.resume_monitoring!
-      cluster.monitored?.should be_true
+      cluster.monitored?.should be true
     end
   end
 

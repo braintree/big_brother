@@ -8,7 +8,7 @@ require "socket"
 Dir.glob("#{File.expand_path('support', File.dirname(__FILE__))}/**/*.rb").each { |f| require f }
 
 RSpec.configure do |config|
-  config.expect_with :rspec
+  config.expect_with(:rspec) { |c| c.syntax = :should }
   config.include Rack::Test::Methods
 
   config.around(:each) do |spec|
