@@ -38,11 +38,11 @@ describe BigBrother::StatusFile do
       status_file = BigBrother::StatusFile.new("foo")
       status_file.create("for testing")
 
-      status_file.exists?.should be_true
+      status_file.exists?.should be true
 
       status_file.delete
 
-      status_file.exists?.should be_false
+      status_file.exists?.should be false
     end
   end
 end

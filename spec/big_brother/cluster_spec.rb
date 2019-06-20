@@ -76,9 +76,9 @@ describe BigBrother::Cluster do
   describe "#needs_check?" do
     it "requires the cluster to be monitored" do
       cluster = Factory.cluster
-      cluster.needs_check?.should be_false
+      cluster.needs_check?.should be false
       cluster.start_monitoring!
-      cluster.needs_check?.should be_true
+      cluster.needs_check?.should be true
     end
   end
 
@@ -129,9 +129,9 @@ describe BigBrother::Cluster do
       BigBrother::HealthFetcher.stub(:current_health).and_return(10)
 
       cluster.start_monitoring!
-      cluster.needs_check?.should be_true
+      cluster.needs_check?.should be true
       cluster.monitor_nodes
-      cluster.needs_check?.should be_false
+      cluster.needs_check?.should be false
     end
 
     it "calls monitor on each of the nodes" do
@@ -155,7 +155,7 @@ describe BigBrother::Cluster do
 
       cluster.start_monitoring!
       cluster.monitor_nodes
-      cluster.downpage_enabled?.should be_true
+      cluster.downpage_enabled?.should be true
     end
 
     it "does not enable a downpage if the cluster does not have a downpage enabled" do
@@ -167,7 +167,7 @@ describe BigBrother::Cluster do
 
       cluster.start_monitoring!
       cluster.monitor_nodes
-      cluster.downpage_enabled?.should be_false
+      cluster.downpage_enabled?.should be false
     end
 
     it "adds a downpage node to IPVS when down" do
@@ -269,9 +269,9 @@ describe BigBrother::Cluster do
     it "marks the cluster as monitored" do
       cluster = Factory.cluster
 
-      cluster.monitored?.should be_false
+      cluster.monitored?.should be false
       cluster.resume_monitoring!
-      cluster.monitored?.should be_true
+      cluster.monitored?.should be true
     end
   end
 
@@ -344,22 +344,22 @@ describe BigBrother::Cluster do
   describe "#up_file_exists?" do
     it "returns true when an up file exists" do
       cluster = Factory.cluster(:name => 'name')
-      cluster.up_file_exists?.should be_false
+      cluster.up_file_exists?.should be false
 
       BigBrother::StatusFile.new('up', 'name').create('Up for testing')
 
-      cluster.up_file_exists?.should be_true
+      cluster.up_file_exists?.should be true
     end
   end
 
   describe "#down_file_exists?" do
     it "returns true when an down file exists" do
       cluster = Factory.cluster(:name => 'name')
-      cluster.down_file_exists?.should be_false
+      cluster.down_file_exists?.should be false
 
       BigBrother::StatusFile.new('down', 'name').create('down for testing')
 
-      cluster.down_file_exists?.should be_true
+      cluster.down_file_exists?.should be true
     end
   end
 
@@ -391,7 +391,7 @@ describe BigBrother::Cluster do
 
       retval = config_cluster.incorporate_state(original_cluster)
 
-      retval.monitored.should be_true
+      retval.monitored.should be true
     end
 
     it "finds any new nodes from the provided cluster and adds them with a weight of 0" do

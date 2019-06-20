@@ -31,6 +31,9 @@ module BigBrother
       @down_file = BigBrother::StatusFile.new('down', @name)
       @ramp_up_time = attributes.fetch(:ramp_up_time, 60)
       @has_downpage = attributes[:has_downpage]
+      if @has_downpage == false
+        @downpage_enabled = false
+      end
       @nagios = attributes[:nagios]
     end
 
