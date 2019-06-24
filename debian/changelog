@@ -1,3 +1,9 @@
+big-brother (0.9.8-1) stable; urgency=medium
+
+  * fix tests on stretch
+
+ -- Jesse Hathaway <hathaway@paypal.com>  Mon, 24 Jun 2019 15:03:52 +0000
+
 big-brother (0.9.7-1) unstable; urgency=low
 
   * Stop event loop when a healthy node has been found
