@@ -1,0 +1,19 @@
+[Unit]
+Documentation=https://github.com/braintree/big_brother
+Description=IPVS weight coordinator.
+Before=multi-user.target
+Before=graphical.target
+After=remote-fs.target
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=-/etc/default/bigbro
+TimeoutSec=5min
+TimeoutStopSec=30s
+Restart=on-failure
+ExecStart=/usr/bin/bigbro --port 9000 --config /etc/big_brother/config.yml --data-dir /etc/big_brother
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

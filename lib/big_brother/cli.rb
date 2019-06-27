@@ -65,7 +65,9 @@ module BigBrother
 
         Signal.trap("HUP") do
           EM.synchrony do
-            BigBrother.logger.info "HUP trapped. Reconfiguring big brother"
+            EM.add_timer(0) do
+              BigBrother.logger.info "HUP trapped. Reconfiguring big brother"
+            end
             BigBrother.reconfigure
           end
         end
