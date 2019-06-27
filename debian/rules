@@ -14,7 +14,11 @@
 export DH_RUBY_IGNORE_TESTS=ruby1.8
 
 %:
-	dh $@ --buildsystem=ruby --with ruby
+	dh $@ --buildsystem=ruby --with ruby,systemd
 
 override_dh_installinit:
 	dh_installinit --name=bigbro
+	dh_systemd_enable bigbro.service
+
+override_dh_systemd_start:
+	dh_systemd_start bigbro.service
