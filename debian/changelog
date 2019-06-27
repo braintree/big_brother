@@ -1,3 +1,10 @@
+big-brother (0.9.9-1) stable; urgency=medium
+
+  * Adds a systemd service to deb packages
+  * Fix unsafe logging within singal handlers
+
+ -- Eric Mrak <mrak@braintreepayments.com>  Thu, 27 Jun 2019 21:23:52 +0000
+
 big-brother (0.9.8-1) stable; urgency=medium
 
   * fix tests on stretch
