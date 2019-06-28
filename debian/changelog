@@ -1,3 +1,9 @@
+big-brother (0.9.10-1) stable; urgency=low
+
+  * Removes unnecessary systemd Before/After dependencies
+
+ -- Eric Mrak <mrak@braintreepayments.com>  Thu, 28 Jun 2019 18:33:00 +0000
+
 big-brother (0.9.9-1) stable; urgency=medium
 
   * Adds a systemd service to deb packages
