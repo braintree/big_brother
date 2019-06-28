@@ -2,8 +2,6 @@
 Documentation=https://github.com/braintree/big_brother
 Description=IPVS weight coordinator.
 Before=multi-user.target
-Before=graphical.target
-After=remote-fs.target
 After=network-online.target
 Wants=network-online.target
 
