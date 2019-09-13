@@ -1,4 +1,4 @@
-big-brother (0.9.11) unstable; urgency=high
+big-brother (0.9.11-1) unstable; urgency=high
 
   * Fix config reload on systems running ruby 2.0+
 
