@@ -301,16 +301,10 @@ module BigBrother
     end
 
     def _check_downpage
-      local_health = @nodes.collect{ |n| n.weight || 0 }.reduce(:+)
-      remote_health = @remote_nodes.collect{ |n| n.weight || 0 }.reduce(:+)
-      total_health = 0
+      local_health = @nodes.collect{ |n| n.weight || 0 }.reduce(:+) || 0
+      remote_health = @remote_nodes.collect{ |n| n.weight || 0 }.reduce(:+) || 0
+      total_health = local_health + remote_health
 
-      if !local_health.nil?
-        total_health += local_health
-      end
-      if !remote_health.nil?
-        total_health += remote_health
-      end
       if total_health <= 0
         _add_maintenance_node unless downpage_enabled?
         @downpage_enabled = true
