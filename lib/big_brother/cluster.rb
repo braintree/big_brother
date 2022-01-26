@@ -301,7 +301,16 @@ module BigBrother
     end
 
     def _check_downpage
-      total_health = @nodes.collect{ |n| n.weight || 0 }.reduce(:+)
+      local_health = @nodes.collect{ |n| n.weight || 0 }.reduce(:+)
+      remote_health = @remote_nodes.collect{ |n| n.weight || 0 }.reduce(:+)
+      total_health = 0
+
+      if !local_health.nil?
+        total_health += local_health
+      end
+      if !remote_health.nil?
+        total_health += remote_health
+      end
       if total_health <= 0
         _add_maintenance_node unless downpage_enabled?
         @downpage_enabled = true
@@ -325,7 +334,8 @@ module BigBrother
     end
 
     def _remove_maintenance_node
-      BigBrother.ipvs.stop_node(fwmark, '127.0.0.1')
+      BigBrother.logger.info "Removing downpage from cluster #{self}"
+      BigBrother.ipvs.stop_node(fwmark, '169.254.254.254')
     end
 
     def _remove_nodes(addresses)
