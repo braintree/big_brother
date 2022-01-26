@@ -183,6 +183,26 @@ describe BigBrother::Cluster do
       @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 1 --real-server 169.254.254.254 --ipip --weight 1"
     end
 
+    it "considers both local and remote node health for downpage" do
+      node = Factory.node(:address => '127.0.0.1')
+      interpol_node = Factory.node(:address => '127.0.0.1', :interpol => true)
+      BigBrother.ipvs.stub(:running_configuration).and_return({'1' => ['127.0.0.1', '172.27.1.3']})
+      cluster = Factory.active_active_cluster(:backend_mode => 'active_active', :has_downpage => true, :fwmark => 1, :nodes => [node, interpol_node])
+      BigBrother::HealthFetcher.stub(:current_health).and_return(0)
+      BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 90,'count' => 1,'lb_ip_address' => '172.27.1.3','lb_url' => 'http://172.27.1.3','health' => 45}])
+
+      cluster.start_monitoring!
+      cluster.monitor_nodes
+
+      @stub_executor.commands.should_not include("ipvsadm --add-server --fwmark-service 1 --real-server 169.254.254.254 --ipip --weight 1")
+
+      BigBrother::HealthFetcher.stub(:interpol_status).and_return([{'aggregated_health' => 0,'count' => 1,'lb_ip_address' => '172.27.1.3','lb_url' => 'http://172.27.1.3','health' => 0}])
+
+      cluster.monitor_nodes
+
+      @stub_executor.commands.last.should == "ipvsadm --add-server --fwmark-service 1 --real-server 169.254.254.254 --ipip --weight 1"
+    end
+
     it "removes downpage node from IPVS if it exists and cluster is up" do
       node1 = Factory.node
       node2 = Factory.node
@@ -196,7 +216,7 @@ describe BigBrother::Cluster do
       BigBrother::HealthFetcher.stub(:current_health).and_return(10)
       cluster.monitor_nodes
 
-      @stub_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 127.0.0.1"
+      @stub_executor.commands.last.should == "ipvsadm --delete-server --fwmark-service 1 --real-server 169.254.254.254"
     end
 
     context "nagios" do
