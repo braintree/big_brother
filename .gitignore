@@ -22,3 +22,6 @@ tags
 test/tmp
 test/version_tmp
 tmp
+debian/files
+debian/.debhelper
+debian/debhelper*
