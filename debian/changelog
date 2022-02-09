@@ -1,3 +1,9 @@
+big-brother (0.9.12-1) unstable; urgency=medium
+
+  * Fix downpage support
+
+ -- Clay Fiske <clfiske@paypal.com>  Wed, 09 Feb 2022 18:50:10 +0000
+
 big-brother (0.9.11-1) unstable; urgency=high
 
   * Fix config reload on systems running ruby 2.0+
