@@ -3,7 +3,8 @@ Section: ruby
 Priority: optional
 Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
 Uploaders: Stephen Gelman <stephen.gelman@braintreepayments.com>
-Build-Depends: debhelper (>= 7.0.50~), gem2deb (>= 0.7.0~), ruby-rspec, ruby-rack-test, rake
+Build-Depends: debhelper (>= 7.0.50~), gem2deb (>= 0.7.0~), ruby-rspec, ruby-rack-test, rake, ruby-async-rack, ruby-em-synchrony, ruby-rack, ruby-rack, ruby-rack-fiber-pool, ruby-em-resolv-replace
+
 Standards-Version: 3.9.3
 Vcs-Git: git://github.com/braintree/big_brother.git
 Vcs-Browser: https://github.com/braintree/big_brother
